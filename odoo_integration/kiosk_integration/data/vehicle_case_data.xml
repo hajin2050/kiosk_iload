@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <!-- System Parameters -->
+        <record id="config_kiosk_base_url" model="ir.config_parameter">
+            <field name="key">kiosk_integration.kiosk_base_url</field>
+            <field name="value">http://localhost:3002</field>
+        </record>
+        
+        <record id="config_shared_secret" model="ir.config_parameter">
+            <field name="key">kiosk_integration.shared_secret</field>
+            <field name="value">your_secure_shared_secret_here</field>
+        </record>
+    </data>
+</odoo>

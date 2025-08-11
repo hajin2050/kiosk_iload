@@ -1,0 +1,5 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_vehicle_case_user,vehicle.case.user,model_vehicle_case,base.group_user,1,1,1,0
+access_vehicle_case_manager,vehicle.case.manager,model_vehicle_case,base.group_system,1,1,1,1
+access_vehicle_document_user,vehicle.document.user,model_vehicle_document,base.group_user,1,1,1,0
+access_vehicle_document_manager,vehicle.document.manager,model_vehicle_document,base.group_system,1,1,1,1

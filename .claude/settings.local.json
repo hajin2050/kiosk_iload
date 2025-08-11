@@ -1,0 +1,33 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(curl:*)",
+      "Bash(docker:*)",
+      "Bash(brew install:*)",
+      "Bash(pip3:*)",
+      "Bash(sudo chown:*)",
+      "Bash(pkill:*)",
+      "Bash(true)",
+      "Bash(grep:*)",
+      "Bash(lsof:*)",
+      "Bash(npx prisma:*)",
+      "Bash(psql:*)",
+      "Bash(node:*)",
+      "Bash(ollama:*)",
+      "Bash(chmod:*)",
+      "Bash(wget:*)",
+      "Bash(tar:*)",
+      "Bash(./ollama serve)",
+      "Bash(./ollama pull qwen2.5:3b)",
+      "Bash(/opt/homebrew/bin/ollama:*)",
+      "Bash(unzip:*)",
+      "Bash(/tmp/Ollama.app/Contents/Resources/ollama pull qwen2.5:3b)",
+      "Bash(/tmp/Ollama.app/Contents/Resources/ollama list)",
+      "Bash(rm:*)",
+      "Bash(npm install:*)",
+      "Bash(cat:*)",
+      "Bash(python3:*)"
+    ],
+    "deny": []
+  }
+}

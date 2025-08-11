@@ -1,0 +1,92 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum OwnerType {
+  INDIVIDUAL
+  BUSINESS
+  CORPORATE
+}
+
+enum CaseStatus {
+  RECEIVED
+  NEED_MORE_DOCS
+  COMPLETED
+}
+
+enum DocumentType {
+  VEHICLE_REGISTRATION
+  DELEGATION_FORM
+  INVOICE
+  ID_CARD
+  ETC
+}
+
+enum UserRole {
+  ADMIN
+  STAFF
+  VIEWER
+}
+
+model VehicleCase {
+  id                 String      @id @default(uuid())
+  plateNumber        String
+  vin                String?
+  ownerType          OwnerType
+  ownerName          String
+  companyName        String?
+  businessRegNumber  String?
+  language           String
+
+  ocrRawText         String?
+  validatedFields    Json?
+  llmValidated       Boolean     @default(false)
+  llmIssues          Json?
+
+  status             CaseStatus  @default(RECEIVED)
+  submittedAt        DateTime    @default(now())
+  completedAt        DateTime?
+
+  qrToken            String      @unique
+  documents          Document[]
+
+  createdAt          DateTime    @default(now())
+  updatedAt          DateTime    @updatedAt
+}
+
+model Document {
+  id                String        @id @default(uuid())
+  caseId            String
+  case              VehicleCase   @relation(fields: [caseId], references: [id])
+
+  type              DocumentType
+  filePath          String
+  uploadedAt        DateTime      @default(now())
+
+  ocrResult         String?
+  mappedFields      Json?
+  validatedFields   Json?
+  ocrConfidence     String?
+  ocrErrors         Json?
+
+  createdAt         DateTime      @default(now())
+}
+
+model User {
+  id        String    @id @default(uuid())
+  email     String    @unique
+  password  String
+  role      UserRole  @default(ADMIN)
+
+  createdAt DateTime  @default(now())
+}

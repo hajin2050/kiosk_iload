@@ -1,0 +1,25 @@
+{
+  "name": "iload_kiosk",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.59.0",
+    "@prisma/client": "^6.13.0",
+    "express": "^5.1.0",
+    "multer": "^2.0.2",
+    "node-fetch": "^3.3.2",
+    "ollama": "^0.5.17",
+    "pdf-lib": "^1.17.1",
+    "pdfkit": "^0.17.1",
+    "prisma": "^6.13.0",
+    "sharp": "^0.34.3",
+    "tesseract.js": "^6.0.1"
+  }
+}

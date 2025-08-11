@@ -1,0 +1,196 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <!-- Report Action -->
+        <record id="action_report_vehicle_case" model="ir.actions.report">
+            <field name="name">Vehicle Deregistration Form</field>
+            <field name="model">vehicle.case</field>
+            <field name="report_type">qweb-pdf</field>
+            <field name="report_name">kiosk_integration.report_vehicle_case_document</field>
+            <field name="report_file">kiosk_integration.report_vehicle_case_document</field>
+            <field name="binding_model_id" eval="False"/>
+            <field name="binding_type">report</field>
+        </record>
+
+        <!-- Report Template -->
+        <template id="report_vehicle_case_document">
+            <t t-call="web.html_container">
+                <t t-foreach="docs" t-as="case">
+                    <t t-call="web.external_layout">
+                        <div class="page">
+                            <div class="oe_structure"/>
+                            
+                            <!-- Header -->
+                            <div class="text-center mb-4">
+                                <h2>Vehicle Deregistration Application</h2>
+                                <h3>차량 말소등록 신청서</h3>
+                            </div>
+
+                            <!-- Case Information -->
+                            <div class="row mb-4">
+                                <div class="col-12">
+                                    <table class="table table-bordered">
+                                        <tr>
+                                            <td class="text-center bg-light" style="width: 30%;">
+                                                <strong>Application Number<br/>접수번호</strong>
+                                            </td>
+                                            <td style="width: 70%;">
+                                                <span t-field="case.external_uuid"/>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td class="text-center bg-light">
+                                                <strong>Status<br/>상태</strong>
+                                            </td>
+                                            <td>
+                                                <span t-field="case.status"/>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td class="text-center bg-light">
+                                                <strong>Submitted Date<br/>접수일시</strong>
+                                            </td>
+                                            <td>
+                                                <span t-field="case.submitted_at" t-options="{'widget': 'datetime'}"/>
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </div>
+                            </div>
+
+                            <!-- Vehicle Information -->
+                            <div class="row mb-4">
+                                <div class="col-12">
+                                    <h4>Vehicle Information / 차량 정보</h4>
+                                    <table class="table table-bordered">
+                                        <tr>
+                                            <td class="text-center bg-light" style="width: 30%;">
+                                                <strong>Plate Number<br/>차량번호</strong>
+                                            </td>
+                                            <td style="width: 70%;">
+                                                <span t-field="case.plate_number"/>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td class="text-center bg-light">
+                                                <strong>VIN Number<br/>차대번호</strong>
+                                            </td>
+                                            <td>
+                                                <span t-field="case.vin"/>
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </div>
+                            </div>
+
+                            <!-- Owner Information -->
+                            <div class="row mb-4">
+                                <div class="col-12">
+                                    <h4>Owner Information / 소유자 정보</h4>
+                                    <table class="table table-bordered">
+                                        <tr>
+                                            <td class="text-center bg-light" style="width: 30%;">
+                                                <strong>Owner Type<br/>소유자 구분</strong>
+                                            </td>
+                                            <td style="width: 70%;">
+                                                <span t-field="case.owner_type"/>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td class="text-center bg-light">
+                                                <strong>Owner Name<br/>소유자명</strong>
+                                            </td>
+                                            <td>
+                                                <span t-field="case.owner_name"/>
+                                            </td>
+                                        </tr>
+                                        <tr t-if="case.company_name">
+                                            <td class="text-center bg-light">
+                                                <strong>Company Name<br/>회사명</strong>
+                                            </td>
+                                            <td>
+                                                <span t-field="case.company_name"/>
+                                            </td>
+                                        </tr>
+                                        <tr t-if="case.business_reg_no">
+                                            <td class="text-center bg-light">
+                                                <strong>Business Registration Number<br/>사업자등록번호</strong>
+                                            </td>
+                                            <td>
+                                                <span t-field="case.business_reg_no"/>
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </div>
+                            </div>
+
+                            <!-- Document Information -->
+                            <div class="row mb-4">
+                                <div class="col-12">
+                                    <h4>Submitted Documents / 제출 서류</h4>
+                                    <table class="table table-bordered">
+                                        <thead>
+                                            <tr class="bg-light">
+                                                <th style="width: 30%;">Document Type<br/>서류 종류</th>
+                                                <th style="width: 40%;">Filename<br/>파일명</th>
+                                                <th style="width: 30%;">Upload Date<br/>업로드 일시</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr t-foreach="case.document_ids" t-as="doc">
+                                                <td><span t-field="doc.doc_type"/></td>
+                                                <td><span t-field="doc.filename"/></td>
+                                                <td><span t-field="doc.uploaded_at" t-options="{'widget': 'datetime'}"/></td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+
+                            <!-- OCR Information -->
+                            <div class="row mb-4" t-if="case.ocr_validated">
+                                <div class="col-12">
+                                    <h4>Validation Information / 검증 정보</h4>
+                                    <table class="table table-bordered">
+                                        <tr>
+                                            <td class="text-center bg-light" style="width: 30%;">
+                                                <strong>OCR Validated<br/>OCR 검증완료</strong>
+                                            </td>
+                                            <td style="width: 70%;">
+                                                <span t-if="case.ocr_validated">Yes / 예</span>
+                                                <span t-if="not case.ocr_validated">No / 아니오</span>
+                                            </td>
+                                        </tr>
+                                        <tr t-if="case.completed_at">
+                                            <td class="text-center bg-light">
+                                                <strong>Completed Date<br/>완료일시</strong>
+                                            </td>
+                                            <td>
+                                                <span t-field="case.completed_at" t-options="{'widget': 'datetime'}"/>
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </div>
+                            </div>
+
+                            <!-- Footer -->
+                            <div class="row mt-5">
+                                <div class="col-12 text-center">
+                                    <p class="text-muted">
+                                        This document was generated automatically from the Vehicle Deregistration Kiosk System<br/>
+                                        본 문서는 차량 말소등록 키오스크 시스템에서 자동 생성되었습니다
+                                    </p>
+                                    <p class="text-muted">
+                                        Generated on: <span t-esc="datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')"/>
+                                    </p>
+                                </div>
+                            </div>
+
+                            <div class="oe_structure"/>
+                        </div>
+                    </t>
+                </t>
+            </t>
+        </template>
+    </data>
+</odoo>

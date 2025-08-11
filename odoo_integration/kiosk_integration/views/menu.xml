@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <!-- Main Menu -->
+        <menuitem id="menu_vehicle_deregistration_root"
+                  name="Vehicle Deregistration"
+                  sequence="50"/>
+        
+        <!-- Sub Menus -->
+        <menuitem id="menu_vehicle_cases"
+                  name="Cases"
+                  parent="menu_vehicle_deregistration_root"
+                  action="action_vehicle_case"
+                  sequence="10"/>
+        
+        <menuitem id="menu_vehicle_documents"
+                  name="Documents"
+                  parent="menu_vehicle_deregistration_root"
+                  action="action_vehicle_document"
+                  sequence="20"/>
+    </data>
+</odoo>

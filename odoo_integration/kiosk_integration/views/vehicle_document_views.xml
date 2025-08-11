@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <!-- Form View -->
+        <record id="view_vehicle_document_form" model="ir.ui.view">
+            <field name="name">vehicle.document.form</field>
+            <field name="model">vehicle.document</field>
+            <field name="arch" type="xml">
+                <form string="Vehicle Document">
+                    <sheet>
+                        <group>
+                            <group name="basic_info" string="Basic Information">
+                                <field name="case_id"/>
+                                <field name="doc_type"/>
+                                <field name="attachment_id"/>
+                                <field name="uploaded_at"/>
+                            </group>
+                            <group name="file_info" string="File Information">
+                                <field name="filename"/>
+                                <field name="file_size"/>
+                                <field name="mimetype"/>
+                            </group>
+                        </group>
+                        
+                        <notebook>
+                            <page name="ocr_results" string="OCR Results">
+                                <group>
+                                    <field name="ocr_text" widget="text"/>
+                                    <field name="mapped_fields" widget="ace" options="{'mode': 'json'}"/>
+                                </group>
+                            </page>
+                        </notebook>
+                    </sheet>
+                    <div class="oe_chatter">
+                        <field name="message_follower_ids" widget="mail_followers"/>
+                        <field name="activity_ids" widget="mail_activity"/>
+                        <field name="message_ids" widget="mail_thread"/>
+                    </div>
+                </form>
+            </field>
+        </record>
+
+        <!-- List View -->
+        <record id="view_vehicle_document_tree" model="ir.ui.view">
+            <field name="name">vehicle.document.tree</field>
+            <field name="model">vehicle.document</field>
+            <field name="arch" type="xml">
+                <tree string="Vehicle Documents">
+                    <field name="case_id"/>
+                    <field name="doc_type"/>
+                    <field name="filename"/>
+                    <field name="file_size"/>
+                    <field name="uploaded_at"/>
+                    <button string="View" type="object" name="action_view_attachment" icon="fa-eye"/>
+                </tree>
+            </field>
+        </record>
+
+        <!-- Search View -->
+        <record id="view_vehicle_document_search" model="ir.ui.view">
+            <field name="name">vehicle.document.search</field>
+            <field name="model">vehicle.document</field>
+            <field name="arch" type="xml">
+                <search string="Search Vehicle Documents">
+                    <field name="case_id"/>
+                    <field name="doc_type"/>
+                    <field name="filename"/>
+                    <filter string="Vehicle Registration" name="vehicle_registration" domain="[('doc_type', '=', 'VEHICLE_REGISTRATION')]"/>
+                    <filter string="ID Card" name="id_card" domain="[('doc_type', '=', 'ID_CARD')]"/>
+                    <filter string="Invoice" name="invoice" domain="[('doc_type', '=', 'INVOICE')]"/>
+                    <group expand="0" string="Group By">
+                        <filter string="Document Type" name="group_doc_type" context="{'group_by': 'doc_type'}"/>
+                        <filter string="Case" name="group_case" context="{'group_by': 'case_id'}"/>
+                    </group>
+                </search>
+            </field>
+        </record>
+
+        <!-- Action -->
+        <record id="action_vehicle_document" model="ir.actions.act_window">
+            <field name="name">Vehicle Documents</field>
+            <field name="res_model">vehicle.document</field>
+            <field name="view_mode">tree,form</field>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">
+                    No documents uploaded yet
+                </p>
+                <p>
+                    Documents are automatically uploaded from the kiosk system when customers submit their files.
+                </p>
+            </field>
+        </record>
+    </data>
+</odoo>
