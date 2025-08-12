@@ -11,6 +11,7 @@ from PIL import Image
 from surya.ocr import run_ocr
 from surya.model.detection.segformer import load_model as load_det_model, load_processor as load_det_processor  
 from surya.model.recognition.model import load_model as load_rec_model
+from surya.model.recognition.processor import load_processor as load_rec_processor
 
 def process_korean_vehicle_document(image_path):
     """
@@ -19,12 +20,16 @@ def process_korean_vehicle_document(image_path):
     try:
         print(f"🚀 Surya OCR로 처리 중: {image_path}", file=sys.stderr)
         
+        # stdout flush를 위해 버퍼링 비활성화
+        sys.stdout.reconfigure(line_buffering=True)
+        sys.stderr.reconfigure(line_buffering=True)
+        
         # 이미지 로드
         image = Image.open(image_path)
         
         # 모델 로드 (한국어 최적화)
         det_processor, det_model = load_det_processor(), load_det_model()
-        rec_model = load_rec_model()
+        rec_model, rec_processor = load_rec_model(), load_rec_processor()
         
         # OCR 실행 (한국어 특화)
         langs = ["ko", "en"]  # 한국어 + 영어
@@ -33,7 +38,8 @@ def process_korean_vehicle_document(image_path):
             [langs], 
             det_model, 
             det_processor, 
-            rec_model
+            rec_model,
+            rec_processor
         )
         
         # 결과 파싱
@@ -143,7 +149,17 @@ def main():
         with open(args.output, 'w', encoding='utf-8') as f:
             json.dump(result, f, ensure_ascii=False, indent=2)
     else:
-        print(json.dumps(result, ensure_ascii=False, indent=2))
+        # JSON 출력 전에 stderr로 완료 메시지 출력
+        print("JSON output starting", file=sys.stderr)
+        sys.stderr.flush()
+        
+        # JSON을 한 줄로 출력 (파싱 안정성을 위해)
+        json_output = json.dumps(result, ensure_ascii=False, separators=(',', ':'))
+        print(json_output)
+        sys.stdout.flush()
+        
+        print("JSON output completed", file=sys.stderr)
+        sys.stderr.flush()
 
 if __name__ == "__main__":
     main()

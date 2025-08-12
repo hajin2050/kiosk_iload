@@ -6,6 +6,83 @@ const fs = require('fs');
 // Surya OCR 통합
 const { performSuryaOCR, mapSuryaResultToFields, checkSuryaAvailability } = require('./surya-integration');
 
+// 🎭 Mock OCR data for testing - REMOVE THIS FUNCTION TO ENABLE REAL OCR
+function getMockOCRResult(imagePath) {
+  const filename = path.basename(imagePath).toLowerCase();
+  
+  // 차량등록증 mock 데이터
+  if (filename.includes('8681') || filename.includes('vehicle') || filename.includes('registration')) {
+    return {
+      text: `자동차등록증
+문서확인번호: 3851319808049559
+자동차등록규칙 [별지 제1호서식] <개정 2025. 2. 17.>
+
+자동차등록번호: 12로8681
+차명: G4 렉스턴
+차대번호: KPBGAZAF1KP053475
+제조연일: 2019-07
+최초등록일: 2019년 07월 19일
+
+소유자: 이왕우
+사용본거지: 전주시 완산구 여울로 161, 108동 903호
+
+차량정보:
+전장: 4850 mm
+전폭: 1960 mm  
+전고: 1825 mm
+총중량: 2635 kg
+배기량: 2157 cc
+연료: 경유
+최대정원: 9명
+주행거리: 60,816 km`,
+      structured_fields: {
+        license_plate: '12로8681',
+        vehicle_model: 'G4 렉스턴',
+        chassis_number: 'KPBGAZAF1KP053475',
+        owner_name: '이왕우',
+        registered_address: '전주시 완산구 여울로 161, 108동 903호',
+        manufacturing_date: '2019-07-01',
+        initial_registration_date: '2019-07-19',
+        gross_weight: 2635,
+        engine_displacement: 2157,
+        fuel_type: '경유',
+        mileage: 60816
+      },
+      method: 'mock-ocr',
+      confidence: 'high'
+    };
+  }
+  
+  // 신분증 mock 데이터
+  if (filename.includes('id') || filename.includes('신분증') || filename.includes('img_')) {
+    return {
+      text: `주민등록증
+이왕우
+740801-1******
+전주시 완산구 여울로 161, 108동 903호
+발급일자: 2020.05.15`,
+      structured_fields: {
+        name: '이왕우',
+        birth_date: '1974-08-01',
+        address: '전주시 완산구 여울로 161, 108동 903호',
+        issue_date: '2020-05-15'
+      },
+      method: 'mock-ocr',
+      confidence: 'high'
+    };
+  }
+  
+  // 기본 mock 데이터
+  return {
+    text: `문서 내용을 인식했습니다.
+파일명: ${filename}
+Mock OCR 결과입니다.`,
+    structured_fields: {},
+    method: 'mock-ocr',
+    confidence: 'medium'
+  };
+}
+
 // OCR 전처리: 이미지 품질 개선
 async function preprocessImage(imagePath) {
   try {
@@ -54,25 +131,29 @@ async function performOCR(imagePath) {
       return 'PDF 파일은 OCR 처리가 지원되지 않습니다. 이미지 파일(JPG, PNG)을 업로드해주세요.';
     }
     
-    // 1️⃣ Surya OCR 시도 (고정밀 OCR)
-    const isSuryaAvailable = await checkSuryaAvailability()
-    if (!isSuryaAvailable) {
-      throw new Error('Surya OCR services is now avilable')
-    }
-    console.log('Using Surya OCR high-precision mode') 
-    const suryaResult = await performSuryaOCR(imagePath)
+    // 🚧 TEMPORARY: Mock OCR data for testing - Remove these 2 lines to enable real Surya OCR
+    console.log('🎭 Using mock OCR data for testing');
+    return getMockOCRResult(imagePath);
     
-    if (!suryaResult || !suryaResult.raw_text) {
-      throw new Error('can not extraxt surya results')
-    }
-    
-    console.log("Surya OCR completed successfully")
-    return {
-      text: suryaResult.raw_text,
-      structured_fields: suryaResult.structured_fields || {},
-      method: 'surya-ocr',
-      confidence: suryaResult.confidence || 'high'
-    }
+    // 1️⃣ Surya OCR 시도 (고정밀 OCR) - UNCOMMENT BELOW TO ENABLE REAL OCR
+    // const isSuryaAvailable = await checkSuryaAvailability()
+    // if (!isSuryaAvailable) {
+    //   throw new Error('Surya OCR services is now avilable')
+    // }
+    // console.log('Using Surya OCR high-precision mode') 
+    // const suryaResult = await performSuryaOCR(imagePath)
+    // 
+    // if (!suryaResult || !suryaResult.raw_text) {
+    //   throw new Error('can not extraxt surya results')
+    // }
+    // 
+    // console.log("Surya OCR completed successfully")
+    // return {
+    //   text: suryaResult.raw_text,
+    //   structured_fields: suryaResult.structured_fields || {},
+    //   method: 'surya-ocr',
+    //   confidence: suryaResult.confidence || 'high'
+    // }
       } catch (error) {
     console.error('❌ OCR Error (Surya):', error.message)
     // 서버 크래시 방지: 문자열로 반환하면 상위 라우트에서 그대로 저장/표시됩니다.

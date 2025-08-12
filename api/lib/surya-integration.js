@@ -28,18 +28,47 @@ async function performSuryaOCR(imagePath) {
       pythonProcess.on('close', (code) => {
         if (code === 0) {
           try {
-            const result = JSON.parse(stdout);
-            if (result.success) {
+            // stdout에서 JSON만 추출 (한 줄로 된 완전한 JSON만)
+            const lines = stdout.trim().split('\n');
+            let jsonResult = null;
+            
+            // 뒤에서부터 찾아서 완전한 JSON 한 줄 찾기
+            for (let i = lines.length - 1; i >= 0; i--) {
+              const line = lines[i].trim();
+              
+              // JSON 형태의 한 줄만 시도 (완전성 확인)
+              if (line.startsWith('{"success":')) {
+                try {
+                  jsonResult = JSON.parse(line);
+                  console.log('✅ Found valid JSON line:', line.substring(0, 100) + '...');
+                  break;
+                } catch (e) {
+                  console.warn('⚠️ Failed to parse JSON candidate:', line.substring(0, 100) + '...', e.message);
+                  continue;
+                }
+              }
+            }
+            
+            if (!jsonResult) {
+              console.error('❌ No valid JSON found in stdout lines:');
+              lines.forEach((line, i) => {
+                console.error(`Line ${i}: ${line.substring(0, 100)}${line.length > 100 ? '...' : ''}`);
+              });
+              throw new Error('No valid JSON output found in stdout');
+            }
+            
+            if (jsonResult.success) {
               console.log('✅ Surya OCR completed successfully');
-              console.log(`📊 Extracted ${result.total_lines} text lines`);
-              console.log(`🎯 Found ${Object.keys(result.structured_fields).length} structured fields`);
-              resolve(result);
+              console.log(`📊 Extracted ${jsonResult.total_lines || 0} text lines`);
+              console.log(`🎯 Found ${Object.keys(jsonResult.structured_fields || {}).length} structured fields`);
+              resolve(jsonResult);
             } else {
-              console.error('❌ Surya OCR failed:', result.error);
-              reject(new Error(`Surya OCR failed: ${result.error}`));
+              console.error('❌ Surya OCR failed:', jsonResult.error);
+              reject(new Error(`Surya OCR failed: ${jsonResult.error}`));
             }
           } catch (parseError) {
             console.error('❌ Failed to parse Surya OCR result:', parseError);
+            console.error('Raw stdout:', stdout.substring(0, 200) + '...');
             reject(new Error(`Failed to parse OCR result: ${parseError.message}`));
           }
         } else {
