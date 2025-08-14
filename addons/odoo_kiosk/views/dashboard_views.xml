@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Kanban View -->
+    <record id="view_vehicle_case_kanban" model="ir.ui.view">
+        <field name="name">vehicle.case.kanban</field>
+        <field name="model">vehicle.case</field>
+        <field name="arch" type="xml">
+            <kanban default_group_by="status">
+                <field name="id"/>
+                <field name="plate_number"/>
+                <field name="owner_name"/>
+                <field name="status"/>
+                <field name="submitted_at"/>
+                <templates>
+                    <t t-name="kanban-box">
+                        <div t-attf-class="oe_kanban_card oe_kanban_global_click">
+                            <div class="oe_kanban_content">
+                                <strong><field name="plate_number"/></strong>
+                                <div><field name="owner_name"/></div>
+                                <div><field name="status"/></div>
+                                <div><field name="submitted_at" widget="date"/></div>
+                            </div>
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+
+    <!-- Dashboard Action -->
+    <record id="action_vehicle_dashboard" model="ir.actions.act_window">
+        <field name="name">차량 수출 대시보드</field>
+        <field name="res_model">vehicle.case</field>
+        <field name="view_mode">kanban,tree,form</field>
+        <field name="view_id" ref="view_vehicle_case_kanban"/>
+    </record>
+
+    <!-- Dashboard Menu -->
+    <menuitem id="menu_vehicle_dashboard" 
+              name="대시보드" 
+              parent="odoo_kiosk.menu_vehicle_root" 
+              action="action_vehicle_dashboard"
+              sequence="1"/>
+</odoo>

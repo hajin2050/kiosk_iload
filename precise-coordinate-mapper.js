@@ -57,7 +57,7 @@ async function createPreciseCoordinateMap() {
     };
     
     // 각 필드를 정확한 위치에 배치하여 테스트
-    console.log('🎯 정밀 좌표 테스트 시작...');
+    console.log(' 정밀 좌표 테스트 시작...');
     
     // 소유자 성명
     firstPage.drawText(testData.owner_name, {
@@ -172,13 +172,13 @@ async function createPreciseCoordinateMap() {
     const pdfBytes = await pdfDoc.save();
     fs.writeFileSync('precise-coordinate-test.pdf', pdfBytes);
     
-    console.log('✅ 정밀 좌표 테스트 PDF 생성 완료: precise-coordinate-test.pdf');
-    console.log('📋 정밀 좌표 맵핑:', JSON.stringify(preciseCoordinates, null, 2));
+    console.log(' 정밀 좌표 테스트 PDF 생성 완료: precise-coordinate-test.pdf');
+    console.log(' 정밀 좌표 맵핑:', JSON.stringify(preciseCoordinates, null, 2));
     
     return preciseCoordinates;
     
   } catch (error) {
-    console.error('❌ 정밀 좌표 매핑 실패:', error);
+    console.error(' 정밀 좌표 매핑 실패:', error);
   }
 }
 

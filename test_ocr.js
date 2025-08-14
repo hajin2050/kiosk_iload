@@ -18,9 +18,9 @@ const ocrText = `
 배기량: 2157 cc
 `;
 
-console.log('🔍 입력 OCR 텍스트:');
+console.log(' 입력 OCR 텍스트:');
 console.log(ocrText);
-console.log('\n📋 OCR 매핑 결과:');
+console.log('\n OCR 매핑 결과:');
 
 // 현재 OCR 매핑 로직 시뮬레이션
 const fields = {};
@@ -33,7 +33,7 @@ for (const pattern of platePatterns) {
   const matches = ocrText.match(pattern);
   if (matches) {
     fields.license_plate = matches[0];
-    console.log(`✅ 차량번호: ${fields.license_plate}`);
+    console.log(` 차량번호: ${fields.license_plate}`);
     break;
   }
 }
@@ -47,7 +47,7 @@ for (const pattern of vehicleModelPatterns) {
   const matches = ocrText.match(pattern);
   if (matches) {
     fields.vehicle_model = matches[0].replace('차명:', '').trim();
-    console.log(`✅ 차명: ${fields.vehicle_model}`);
+    console.log(` 차명: ${fields.vehicle_model}`);
     break;
   }
 }
@@ -60,7 +60,7 @@ for (const pattern of vinPatterns) {
   const matches = ocrText.match(pattern);
   if (matches) {
     fields.chassis_number = matches[0];
-    console.log(`✅ 차대번호: ${fields.chassis_number}`);
+    console.log(` 차대번호: ${fields.chassis_number}`);
     break;
   }
 }
@@ -73,7 +73,7 @@ for (const pattern of namePatterns) {
   const matches = ocrText.match(pattern);
   if (matches) {
     fields.owner_name = matches[1];
-    console.log(`✅ 소유자: ${fields.owner_name}`);
+    console.log(` 소유자: ${fields.owner_name}`);
     break;
   }
 }
@@ -92,7 +92,7 @@ for (const pattern of manufacturingPatterns) {
     } else if (match.length >= 3 && match[2]) {
       fields.manufacturing_date = `${match[1]}-${match[2].padStart(2, '0')}-01`;
     }
-    console.log(`✅ 제조연일: ${fields.manufacturing_date}`);
+    console.log(` 제조연일: ${fields.manufacturing_date}`);
     break;
   }
 }
@@ -106,7 +106,7 @@ for (const pattern of addressPatterns) {
   const matches = ocrText.match(pattern);
   if (matches) {
     fields.registered_address = matches[1] || matches[0];
-    console.log(`✅ 주소: ${fields.registered_address}`);
+    console.log(` 주소: ${fields.registered_address}`);
     break;
   }
 }
@@ -119,7 +119,7 @@ for (const pattern of weightPatterns) {
   const matches = Array.from(ocrText.matchAll(pattern));
   if (matches && matches.length > 0 && matches[0][2]) {
     fields.gross_weight = parseInt(matches[0][2]);
-    console.log(`✅ 총중량: ${fields.gross_weight}kg`);
+    console.log(` 총중량: ${fields.gross_weight}kg`);
     break;
   }
 }
@@ -132,7 +132,7 @@ for (const pattern of fuelPatterns) {
   const matches = ocrText.match(pattern);
   if (matches) {
     fields.fuel_type = matches[1];
-    console.log(`✅ 연료: ${fields.fuel_type}`);
+    console.log(` 연료: ${fields.fuel_type}`);
     break;
   }
 }
@@ -146,7 +146,7 @@ for (const pattern of displacementPatterns) {
   const matches = ocrText.match(pattern);
   if (matches) {
     fields.engine_displacement = parseInt(matches[1]);
-    console.log(`✅ 배기량: ${fields.engine_displacement}cc`);
+    console.log(` 배기량: ${fields.engine_displacement}cc`);
     break;
   }
 }
@@ -160,12 +160,12 @@ for (const pattern of initialRegPatterns) {
   if (matches && matches.length > 0) {
     const match = matches[0];
     fields.initial_registration_date = `${match[1]}-${match[2].padStart(2, '0')}-${match[3].padStart(2, '0')}`;
-    console.log(`✅ 최초등록일: ${fields.initial_registration_date}`);
+    console.log(` 최초등록일: ${fields.initial_registration_date}`);
     break;
   }
 }
 
-console.log('\n📊 최종 추출 결과:');
+console.log('\n 최종 추출 결과:');
 console.log(JSON.stringify(fields, null, 2));
 
 // 정확도 평가
@@ -182,14 +182,14 @@ const expectedValues = {
   initial_registration_date: '2019-07-19'
 };
 
-console.log('\n🎯 정확도 평가:');
+console.log('\n 정확도 평가:');
 let correct = 0;
 let total = Object.keys(expectedValues).length;
 
 for (const [key, expected] of Object.entries(expectedValues)) {
   const actual = fields[key];
   const isCorrect = actual && actual.toString() === expected.toString();
-  console.log(`${isCorrect ? '✅' : '❌'} ${key}: 예상="${expected}" 실제="${actual || 'null'}"`);
+  console.log(`${isCorrect ? '' : ''} ${key}: 예상="${expected}" 실제="${actual || 'null'}"`);
   if (isCorrect) correct++;
 }
 

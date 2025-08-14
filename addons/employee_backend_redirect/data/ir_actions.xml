@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        
+        <!-- 시스템 매개변수: 자동 리다이렉트 활성화 -->
+        <record id="param_auto_redirect_backend" model="ir.config_parameter">
+            <field name="key">employee_backend_redirect.auto_redirect</field>
+            <field name="value">True</field>
+        </record>
+
+    </data>
+</odoo>

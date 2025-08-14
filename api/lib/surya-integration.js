@@ -7,7 +7,7 @@ const path = require('path');
 async function performSuryaOCR(imagePath) {
   return new Promise((resolve, reject) => {
     try {
-      console.log('🚀 Starting Surya OCR processing:', imagePath);
+      console.log(' Starting Surya OCR processing:', imagePath);
       
       const pythonScript = path.join(__dirname, 'surya-ocr.py');
       const pythonProcess = spawn('python3', [pythonScript, imagePath]);
@@ -40,17 +40,17 @@ async function performSuryaOCR(imagePath) {
               if (line.startsWith('{"success":')) {
                 try {
                   jsonResult = JSON.parse(line);
-                  console.log('✅ Found valid JSON line:', line.substring(0, 100) + '...');
+                  console.log(' Found valid JSON line:', line.substring(0, 100) + '...');
                   break;
                 } catch (e) {
-                  console.warn('⚠️ Failed to parse JSON candidate:', line.substring(0, 100) + '...', e.message);
+                  console.warn(' Failed to parse JSON candidate:', line.substring(0, 100) + '...', e.message);
                   continue;
                 }
               }
             }
             
             if (!jsonResult) {
-              console.error('❌ No valid JSON found in stdout lines:');
+              console.error(' No valid JSON found in stdout lines:');
               lines.forEach((line, i) => {
                 console.error(`Line ${i}: ${line.substring(0, 100)}${line.length > 100 ? '...' : ''}`);
               });
@@ -58,28 +58,28 @@ async function performSuryaOCR(imagePath) {
             }
             
             if (jsonResult.success) {
-              console.log('✅ Surya OCR completed successfully');
-              console.log(`📊 Extracted ${jsonResult.total_lines || 0} text lines`);
-              console.log(`🎯 Found ${Object.keys(jsonResult.structured_fields || {}).length} structured fields`);
+              console.log(' Surya OCR completed successfully');
+              console.log(` Extracted ${jsonResult.total_lines || 0} text lines`);
+              console.log(` Found ${Object.keys(jsonResult.structured_fields || {}).length} structured fields`);
               resolve(jsonResult);
             } else {
-              console.error('❌ Surya OCR failed:', jsonResult.error);
+              console.error(' Surya OCR failed:', jsonResult.error);
               reject(new Error(`Surya OCR failed: ${jsonResult.error}`));
             }
           } catch (parseError) {
-            console.error('❌ Failed to parse Surya OCR result:', parseError);
+            console.error(' Failed to parse Surya OCR result:', parseError);
             console.error('Raw stdout:', stdout.substring(0, 200) + '...');
             reject(new Error(`Failed to parse OCR result: ${parseError.message}`));
           }
         } else {
-          console.error('❌ Surya OCR process failed with code:', code);
+          console.error(' Surya OCR process failed with code:', code);
           console.error('stderr:', stderr);
           reject(new Error(`Surya OCR process failed with code ${code}: ${stderr}`));
         }
       });
       
       pythonProcess.on('error', (error) => {
-        console.error('❌ Failed to start Surya OCR process:', error);
+        console.error(' Failed to start Surya OCR process:', error);
         reject(new Error(`Failed to start OCR process: ${error.message}`));
       });
       
@@ -90,7 +90,7 @@ async function performSuryaOCR(imagePath) {
       }, 600000);
       
     } catch (error) {
-      console.error('❌ Surya OCR integration error:', error);
+      console.error(' Surya OCR integration error:', error);
       reject(error);
     }
   });
@@ -129,7 +129,7 @@ function mapSuryaResultToFields(suryaResult) {
     }
   });
   
-  console.log('📋 Surya OCR mapped fields:', Object.keys(mappedFields));
+  console.log(' Surya OCR mapped fields:', Object.keys(mappedFields));
   return mappedFields;
 }
 

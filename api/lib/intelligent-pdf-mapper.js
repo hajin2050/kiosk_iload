@@ -87,7 +87,7 @@ PDF 크기: ${this.pdfDimensions.width} x ${this.pdfDimensions.height} (A4 표�
       };
     });
 
-    console.log('✅ LLM 좌표 검증 및 정제 완료');
+    console.log(' LLM 좌표 검증 및 정제 완료');
     return refined;
   }
 
@@ -137,7 +137,7 @@ PDF 크기: ${this.pdfDimensions.width} x ${this.pdfDimensions.height} (A4 표�
       });
 
       const optimizedText = response.message.content;
-      console.log('🔧 LLM 좌표 최적화 결과:', optimizedText);
+      console.log(' LLM 좌표 최적화 결과:', optimizedText);
 
       try {
         const optimizedCoords = JSON.parse(optimizedText);
@@ -162,7 +162,7 @@ PDF 크기: ${this.pdfDimensions.width} x ${this.pdfDimensions.height} (A4 표�
     // 2단계: 실제 데이터에 맞춰 최적화
     const optimizedCoordinates = await this.optimizeFieldPlacement(vehicleData, basicCoordinates);
     
-    console.log('🎯 최종 LLM 매핑 좌표:', optimizedCoordinates);
+    console.log(' 최종 LLM 매핑 좌표:', optimizedCoordinates);
     return optimizedCoordinates;
   }
 

@@ -26,8 +26,36 @@
       "Bash(rm:*)",
       "Bash(npm install:*)",
       "Bash(cat:*)",
-      "Bash(python3:*)"
+      "Bash(python3:*)",
+      "Bash(npm run start:*)",
+      "Bash(brew services start:*)",
+      "Bash(git clone:*)",
+      "Bash(createuser:*)",
+      "Bash(createdb:*)",
+      "Bash(npm start)",
+      "Bash(mkdir:*)",
+      "Bash(./odoo-bin:*)",
+      "Bash(find:*)",
+      "Bash(sed:*)",
+      "Bash(cp:*)",
+      "Bash(kill:*)",
+      "Bash(./check-odoo.sh:*)",
+      "Bash(npm run dev:*)",
+      "Bash(mkcert:*)",
+      "Bash(npx ts-node:*)",
+      "Bash(npx tsc:*)",
+      "Bash(brew:*)",
+      "Bash(postgres:*)",
+      "Bash(pg_ctl:*)",
+      "Bash(source:*)",
+      "Bash(pip install:*)",
+      "Bash(mv:*)",
+      "Bash(/usr/local/bin/python3.11 odoo-bin:*)"
     ],
-    "deny": []
+    "deny": [],
+    "defaultMode": "acceptEdits",
+    "additionalDirectories": [
+      "/usr/local/bin"
+    ]
   }
 }

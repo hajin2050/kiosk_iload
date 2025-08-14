@@ -6,7 +6,7 @@ const fs = require('fs');
 // Surya OCR 통합
 const { performSuryaOCR, mapSuryaResultToFields, checkSuryaAvailability } = require('./surya-integration');
 
-// 🎭 Mock OCR data for testing - REMOVE THIS FUNCTION TO ENABLE REAL OCR
+// Mock OCR data for testing - REMOVE THIS FUNCTION TO ENABLE REAL OCR
 function getMockOCRResult(imagePath) {
   const filename = path.basename(imagePath).toLowerCase();
   
@@ -117,7 +117,7 @@ async function preprocessImage(imagePath) {
 // 개선된 OCR 실행 (Surya OCR 우선, Tesseract OCR 백업)
 async function performOCR(imagePath) {
   try {
-    console.log('🔍 Starting advanced OCR for file:', imagePath);
+    console.log(' Starting advanced OCR for file:', imagePath);
     
     // 파일 존재 확인
     if (!fs.existsSync(imagePath)) {
@@ -131,11 +131,11 @@ async function performOCR(imagePath) {
       return 'PDF 파일은 OCR 처리가 지원되지 않습니다. 이미지 파일(JPG, PNG)을 업로드해주세요.';
     }
     
-    // 🚧 TEMPORARY: Mock OCR data for testing - Remove these 2 lines to enable real Surya OCR
-    console.log('🎭 Using mock OCR data for testing');
+    //  TEMPORARY: Mock OCR data for testing - Remove these 2 lines to enable real Surya OCR
+    console.log(' Using mock OCR data for testing');
     return getMockOCRResult(imagePath);
     
-    // 1️⃣ Surya OCR 시도 (고정밀 OCR) - UNCOMMENT BELOW TO ENABLE REAL OCR
+    // 1. Surya OCR 시도 (고정밀 OCR) - UNCOMMENT BELOW TO ENABLE REAL OCR
     // const isSuryaAvailable = await checkSuryaAvailability()
     // if (!isSuryaAvailable) {
     //   throw new Error('Surya OCR services is now avilable')
@@ -155,7 +155,7 @@ async function performOCR(imagePath) {
     //   confidence: suryaResult.confidence || 'high'
     // }
       } catch (error) {
-    console.error('❌ OCR Error (Surya):', error.message)
+    console.error(' OCR Error (Surya):', error.message)
     // 서버 크래시 방지: 문자열로 반환하면 상위 라우트에서 그대로 저장/표시됩니다.
     return `OCR 처리에 실패했습니다: ${error.message}`
   }
@@ -255,7 +255,7 @@ function mapVehicleRegistrationFields(ocrText) {
     if (m) { fields.owner_name = m[m.length - 1]; break }
   }
 
-  console.log('ℹ️ 생년월일은 신분증에서만 추출됩니다 (차량등록증 제외)')
+  console.log(' 생년월일은 신분증에서만 추출됩니다 (차량등록증 제외)')
 
   // 배기량
   const dispPatterns = [
@@ -305,7 +305,7 @@ function mapVehicleRegistrationFields(ocrText) {
   }
   if (mileCandidates.length) {
     fields.mileage = Math.max(...mileCandidates)
-    console.log(`🔍 주행거리 감지: ${fields.mileage}km (후보: ${mileCandidates.join(', ')})`)
+    console.log(` 주행거리 감지: ${fields.mileage}km (후보: ${mileCandidates.join(', ')})`)
   }
 
   // 총중량
@@ -346,7 +346,7 @@ function mapFieldsByDocumentType(documentType, ocrResult) {
 
     // Surya의 구조화 필드가 있으면 우선 사용
     if (ocrResult.structured_fields && Object.keys(ocrResult.structured_fields).length > 0) {
-      console.log('🎯 Using Surya OCR structured fields')
+      console.log(' Using Surya OCR structured fields')
       return mapSuryaResultToFields({
         structured_fields: ocrResult.structured_fields,
         raw_text: ocrText,

@@ -55,7 +55,7 @@ async function createCorrectedCoordinateMap() {
       mileage: '50000',
     };
     
-    console.log('🎯 수정된 좌표로 테스트 시작...');
+    console.log(' 수정된 좌표로 테스트 시작...');
     
     // 소유자 성명
     firstPage.drawText(testData.owner_name, {
@@ -170,13 +170,13 @@ async function createCorrectedCoordinateMap() {
     const pdfBytes = await pdfDoc.save();
     fs.writeFileSync('corrected-coordinate-test.pdf', pdfBytes);
     
-    console.log('✅ 수정된 좌표 테스트 PDF 생성 완료: corrected-coordinate-test.pdf');
-    console.log('📋 수정된 좌표 맵핑:', JSON.stringify(correctedCoordinates, null, 2));
+    console.log(' 수정된 좌표 테스트 PDF 생성 완료: corrected-coordinate-test.pdf');
+    console.log(' 수정된 좌표 맵핑:', JSON.stringify(correctedCoordinates, null, 2));
     
     return correctedCoordinates;
     
   } catch (error) {
-    console.error('❌ 수정된 좌표 매핑 실패:', error);
+    console.error(' 수정된 좌표 매핑 실패:', error);
   }
 }
 

@@ -88,10 +88,11 @@ router.post('/', upload.single('file'), async (req, res) => {
   }
 })
 
-// POST /api/documents/:id/ocr - OCR 처리
+// POST /api/documents/:id/ocr - Mock OCR 처리
 router.post('/:id/ocr', async (req, res) => {
   try {
     const { id } = req.params;
+    const startTime = Date.now();
     
     // 문서 조회
     const document = await prisma.document.findUnique({
@@ -104,6 +105,7 @@ router.post('/:id/ocr', async (req, res) => {
     
     if (document.ocrResult) {
       // 이미 OCR 처리가 완료된 경우
+      console.log(`[OCR] Document ${id} already processed`);
       return res.json({ ok: true, data: document });
     }
     
@@ -113,75 +115,54 @@ router.post('/:id/ocr', async (req, res) => {
       return res.status(404).json({ ok: false, message: 'file not found' });
     }
     
-    // OCR 라이브러리 로드
-    const { performOCR, mapFieldsByDocumentType } = require('../lib/ocr');
-    const { validateAndEnhanceOCRResult } = require('../lib/llm-validator');
-    const odooSync = require('../lib/odoo-sync');
+    console.log(`[OCR] Processing ${document.type} document ${id}: ${document.filePath}`);
     
-    // OCR 수행
-    const ocrResult = await performOCR(filePath);
-    console.log("[DEBUG] ocrResult:",ocrResult)
-    // OCR 결과에서 텍스트 추출 (Surya OCR 객체 또는 Tesseract 문자열 처리)
-    const ocrText = typeof ocrResult === 'object' ? ocrResult.text : ocrResult;
+    // Mock OCR 엔진 사용
+    const mockOcrEngine = require('../lib/mock-ocr-engine');
+    const { mapFieldsByDocumentType } = require('../lib/mapper');
     
-    // 문서 타입별 필드 매핑 (전체 OCR 결과 전달)
-    const mappedFields = mapFieldsByDocumentType(document.type, ocrResult);
+    // Mock OCR 실행 (즉시 응답)
+    const ocrResult = await mockOcrEngine.run(filePath, document.type);
+    const filename = path.basename(filePath);
     
-    // LLM을 통한 OCR 검증 및 개선 (차량등록증인 경우에만)
-    let validatedFields = mappedFields;
-    let llmResult = null;
+    // 문서 타입별 필드 매핑
+    const mappedFields = mapFieldsByDocumentType(document.type, ocrResult, filename);
     
-    if (document.type === 'VEHICLE_REGISTRATION') {
-      try {
-        llmResult = await validateAndEnhanceOCRResult(
-          'VEHICLE_REGISTRATION',
-          ocrText,
-          mappedFields,
-          filePath
-        );
-        
-        if (llmResult && llmResult.enhanced_fields) {
-          validatedFields = { ...mappedFields, ...llmResult.enhanced_fields };
-        }
-      } catch (error) {
-        console.error('LLM validation failed:', error);
-        // LLM 실패시에도 기본 OCR 결과는 저장
-      }
-    }
-    
-    // OCR 메타데이터 추출
-    const ocrMethod = typeof ocrResult === 'object' ? ocrResult.method || 'unknown' : 'tesseract';
-    const ocrConfidence = typeof ocrResult === 'object' ? ocrResult.confidence || 'medium' : 'medium';
-    console.log('[DEBUG] ocrResult type of:', typeof ocrResult, ocrResult)
-    // DB 업데이트
+    // DB 업데이트 (JSON 필드는 객체 직접 할당)
     const updatedDocument = await prisma.document.update({
       where: { id },
       data: {
-        ocrResult: ocrText,
+        ocrResult: ocrResult,
         mappedFields: mappedFields,
-        validatedFields: validatedFields,
-        ocrConfidence: llmResult?.confidence || ocrConfidence,
-        ocrErrors: llmResult?.errors || []
+        ocrConfidence: ocrResult.confidence,
+        ocrErrors: []
       }
     });
 
-
+    const processingTime = Date.now() - startTime;
+    console.log(`[OCR] Completed ${document.type} processing in ${processingTime}ms - Document ${id}`);
     
-    // 차량 정보가 있으면 Odoo에 전송 (차량등록증인 경우)
-    if (document.type === 'VEHICLE_REGISTRATION' && validatedFields) {
-      try {
-        await odooSync.updateCaseVehicleData(document.caseId, validatedFields);
-        console.log('✅ Vehicle data synced to Odoo:', document.caseId);
-      } catch (error) {
-        console.error('❌ Failed to sync vehicle data to Odoo:', error);
-        // 에러가 있어도 응답은 성공으로 처리 (OCR 자체는 성공했으므로)
-      }
-    }
+    // Sync document to Odoo after OCR processing (non-blocking)
+    const odooSync = require('../lib/odoo-sync');
+    const absoluteFilePath = path.join(process.cwd(), document.filePath);
+    odooSync.syncDocument(document.caseId, updatedDocument, absoluteFilePath).catch(error => {
+      console.error('Failed to sync document to Odoo:', error.message);
+    });
     
-    res.json({ ok: true, data: updatedDocument });
+    res.json({ 
+      ok: true, 
+      data: updatedDocument,
+      processing_time: processingTime 
+    });
+    
   } catch (error) {
-    console.error('OCR processing failed:', error);
-    res.status(500).json({ ok: false, message: 'OCR processing failed', error: error.message });
+    console.error('[OCR] Processing failed:', error);
+    res.status(500).json({ 
+      ok: false, 
+      message: 'OCR processing failed', 
+      code: 'OCR_ERROR',
+      error: error.message 
+    });
   }
 });
 

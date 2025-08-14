@@ -1,5 +1,5 @@
 // Surya OCR 시뮬레이션 - 실제 차량등록증 이미지 기반
-console.log('🚀 Surya OCR 고정밀 추출 시뮬레이션');
+console.log(' Surya OCR 고정밀 추출 시뮬레이션');
 console.log('='.repeat(50));
 
 // 제공된 차량등록증에서 추출 가능한 모든 정보
@@ -33,7 +33,7 @@ const mockSuryaResult = {
 최대정원: 9명`,
 
   structured_fields: {
-    // 📋 기본 차량 정보
+    //  기본 차량 정보
     license_plate: '12로8681',
     vehicle_model: 'G4 렉스턴', 
     chassis_number: 'KPBGAZAF1KP053475',
@@ -56,7 +56,7 @@ const mockSuryaResult = {
     vehicle_width: 1960, 
     vehicle_height: 1825,
     
-    // 📄 문서 정보
+    //  문서 정보
     document_number: '3851319808049559',
     document_version: '별지 제1호서식',
     document_revision: '개정 2025. 2. 17.',
@@ -76,7 +76,7 @@ const mockSuryaResult = {
 function mapSuryaResultToFields(suryaResult) {
   const fields = suryaResult.structured_fields || {};
   
-  console.log('🎯 Surya OCR 구조화된 필드 추출:');
+  console.log(' Surya OCR 구조화된 필드 추출:');
   console.log('-'.repeat(40));
   
   const mappedFields = {
@@ -125,7 +125,7 @@ function mapSuryaResultToFields(suryaResult) {
 // 실제 처리 실행
 const result = mapSuryaResultToFields(mockSuryaResult);
 
-console.log('📊 최종 매핑 결과:');
+console.log(' 최종 매핑 결과:');
 console.log('='.repeat(50));
 
 // 필수 필드들
@@ -140,7 +140,7 @@ console.log('\n👤 소유자 정보:');
 console.log(`   소유자명: ${result.owner_name}`);
 console.log(`   주소: ${result.registered_address}`);
 
-console.log('\n⚙️ 차량 사양:');
+console.log('\n⚙ 차량 사양:');
 console.log(`   총중량: ${result.gross_weight}kg`);
 console.log(`   배기량: ${result.engine_displacement}cc`);
 console.log(`   연료: ${result.fuel_type}`);
@@ -151,12 +151,12 @@ console.log(`   전장: ${result.vehicle_dimensions.length}mm`);
 console.log(`   전폭: ${result.vehicle_dimensions.width}mm`);
 console.log(`   전고: ${result.vehicle_dimensions.height}mm`);
 
-console.log('\n📄 문서 정보:');
+console.log('\n 문서 정보:');
 console.log(`   문서확인번호: ${result.document_info.document_number}`);
 console.log(`   등록번호: ${result.document_info.registration_number}`);
 console.log(`   문서버전: ${result.document_info.document_version}`);
 
-console.log('\n🎯 OCR 품질:');
+console.log('\n OCR 품질:');
 console.log(`   신뢰도: ${result.ocr_confidence}`);
 console.log(`   처리방식: ${result.processing_method}`);
 console.log(`   감지된 텍스트 라인: ${result.total_lines_detected}개`);
@@ -184,7 +184,7 @@ let total = Object.keys(expectedValues).length;
 for (const [key, expected] of Object.entries(expectedValues)) {
   const actual = result[key];
   const isCorrect = actual && actual.toString() === expected.toString();
-  console.log(`${isCorrect ? '✅' : '❌'} ${key}: 예상="${expected}" 실제="${actual || 'null'}"`);
+  console.log(`${isCorrect ? '' : ''} ${key}: 예상="${expected}" 실제="${actual || 'null'}"`);
   if (isCorrect) correct++;
 }
 
@@ -192,7 +192,7 @@ const accuracy = Math.round(correct/total*100);
 console.log(`\n📈 Surya OCR 정확도: ${correct}/${total} (${accuracy}%)`);
 
 // 기존 Tesseract 대비 개선사항
-console.log('\n🚀 Surya OCR vs Tesseract 비교:');
+console.log('\n Surya OCR vs Tesseract 비교:');
 console.log('='.repeat(50));
 console.log('기존 Tesseract OCR: 50% 정확도');
 console.log(`개선 Surya OCR: ${accuracy}% 정확도`);
@@ -204,8 +204,8 @@ console.log('   - 최대정원');
 console.log('   - 문서 메타데이터');
 console.log('   - 등록번호');
 
-console.log('\n🎉 결론: 실 서비스 적용 가능한 수준의 정확도 달성!');
+console.log('\n 결론: 실 서비스 적용 가능한 수준의 정확도 달성!');
 
 // JSON 형태로도 출력
-console.log('\n📋 JSON 출력:');
+console.log('\n JSON 출력:');
 console.log(JSON.stringify(result, null, 2));

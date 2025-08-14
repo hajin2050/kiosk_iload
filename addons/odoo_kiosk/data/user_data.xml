@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <!-- Admin 사용자에게 Kiosk Manager 권한 부여 -->
+        <record id="base.user_admin" model="res.users">
+            <field name="groups_id" eval="[(4, ref('odoo_kiosk.group_kiosk_manager'))]"/>
+        </record>
+        
+        <!-- Root 사용자에게도 Kiosk Manager 권한 부여 -->
+        <record id="base.user_root" model="res.users">
+            <field name="groups_id" eval="[(4, ref('odoo_kiosk.group_kiosk_manager'))]"/>
+        </record>
+    </data>
+</odoo>

@@ -1,0 +1,110 @@
+{
+  "font": "NotoSansCJKkr-Regular.ttf",
+  "page": 0,
+  "origin": "bottom-left",
+  "pageSize": { "width": 595, "height": 842 },
+  "fields": {
+    "owner.name": {
+      "type": "text",
+      "x": 120,
+      "y": 650,
+      "w": 200,
+      "fontSize": 12,
+      "lineHeight": 14
+    },
+    "owner.rrnOrCorpNo": {
+      "type": "text",
+      "x": 120,
+      "y": 620,
+      "w": 200,
+      "fontSize": 10
+    },
+    "owner.address": {
+      "type": "text",
+      "x": 120,
+      "y": 590,
+      "w": 320,
+      "fontSize": 10,
+      "lineHeight": 12,
+      "maxLines": 2
+    },
+    "owner.phone": {
+      "type": "text",
+      "x": 120,
+      "y": 560,
+      "w": 200,
+      "fontSize": 10
+    },
+    "vehicle.plate": {
+      "type": "text",
+      "x": 120,
+      "y": 530,
+      "w": 150,
+      "fontSize": 12,
+      "lineHeight": 14
+    },
+    "vehicle.vin": {
+      "type": "text",
+      "x": 300,
+      "y": 530,
+      "w": 200,
+      "fontSize": 10
+    },
+    "vehicle.model": {
+      "type": "text",
+      "x": 120,
+      "y": 500,
+      "w": 200,
+      "fontSize": 10
+    },
+    "vehicle.mileageKm": {
+      "type": "text",
+      "x": 350,
+      "y": 500,
+      "w": 100,
+      "fontSize": 10,
+      "format": "#,### km"
+    },
+    "dereg.reason": {
+      "type": "checkbox-group",
+      "options": {
+        "폐차": { "x": 80, "y": 450, "box": 12 },
+        "수출예정": { "x": 160, "y": 450, "box": 12 },
+        "도난": { "x": 240, "y": 450, "box": 12 },
+        "재해사고": { "x": 320, "y": 450, "box": 12 },
+        "기타": { "x": 400, "y": 450, "box": 12 }
+      }
+    },
+    "dereg.needCertificate": {
+      "type": "checkbox",
+      "x": 80,
+      "y": 420,
+      "box": 12
+    },
+    "dereg.applicationDate": {
+      "type": "date",
+      "x": 350,
+      "y": 380,
+      "w": 120,
+      "fontSize": 10,
+      "format": "YYYY. M. D."
+    },
+    "dereg.applicantBirth": {
+      "type": "date",
+      "x": 120,
+      "y": 350,
+      "w": 120,
+      "fontSize": 10,
+      "format": "YYYY. MM. DD."
+    },
+    "sign.applicant": {
+      "type": "stamp",
+      "x": 400,
+      "y": 300,
+      "w": 90,
+      "h": 36,
+      "text": "(서명)",
+      "fontSize": 10
+    }
+  }
+}

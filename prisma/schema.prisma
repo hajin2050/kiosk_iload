@@ -8,85 +8,48 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "sqlite"
   url      = env("DATABASE_URL")
 }
 
-enum OwnerType {
-  INDIVIDUAL
-  BUSINESS
-  CORPORATE
-}
-
-enum CaseStatus {
-  RECEIVED
-  NEED_MORE_DOCS
-  COMPLETED
-}
-
-enum DocumentType {
-  VEHICLE_REGISTRATION
-  DELEGATION_FORM
-  INVOICE
-  ID_CARD
-  ETC
-}
-
-enum UserRole {
-  ADMIN
-  STAFF
-  VIEWER
-}
 
 model VehicleCase {
-  id                 String      @id @default(uuid())
-  plateNumber        String
-  vin                String?
-  ownerType          OwnerType
-  ownerName          String
-  companyName        String?
-  businessRegNumber  String?
-  language           String
-
-  ocrRawText         String?
-  validatedFields    Json?
-  llmValidated       Boolean     @default(false)
-  llmIssues          Json?
-
-  status             CaseStatus  @default(RECEIVED)
-  submittedAt        DateTime    @default(now())
-  completedAt        DateTime?
-
-  qrToken            String      @unique
-  documents          Document[]
-
-  createdAt          DateTime    @default(now())
-  updatedAt          DateTime    @updatedAt
+  id           String    @id @default(cuid())
+  plateNumber  String?
+  ownerName    String?
+  ownerType    String?   // 'INDIVIDUAL' | 'BUSINESS' | 'CORPORATE'
+  companyName  String?
+  isForeigner  Boolean?  @default(false)
+  qrToken      String?
+  status       String?   // 'RECEIVED' | 'NEED_MORE_DOCS' | 'COMPLETED'
+  submittedAt  DateTime? @default(now())
+  completedAt  DateTime?
+  summaryJson  Json?     // 통합 요약 (PDF 채움에 쓰는 표준 스키마)
+  documents    Document[]
+  pdfFiles     PdfFile[]
 }
 
 model Document {
-  id                String        @id @default(uuid())
-  caseId            String
-  case              VehicleCase   @relation(fields: [caseId], references: [id])
+  id              String   @id @default(cuid())
+  caseId          String
+  type            String   // 'VEHICLE_REGISTRATION' | 'DELEGATION_FORM' | 'INVOICE' | 'ID_CARD'
+  filePath        String
+  ocrResult       Json?
+  mappedFields    Json?
+  validatedFields Json?
+  ocrConfidence   String?
+  ocrErrors       Json?
+  createdAt       DateTime @default(now())
 
-  type              DocumentType
-  filePath          String
-  uploadedAt        DateTime      @default(now())
-
-  ocrResult         String?
-  mappedFields      Json?
-  validatedFields   Json?
-  ocrConfidence     String?
-  ocrErrors         Json?
-
-  createdAt         DateTime      @default(now())
+  vehicleCase     VehicleCase @relation(fields: [caseId], references: [id])
 }
 
-model User {
-  id        String    @id @default(uuid())
-  email     String    @unique
-  password  String
-  role      UserRole  @default(ADMIN)
-
-  createdAt DateTime  @default(now())
+model PdfFile {
+  id         String   @id @default(cuid())
+  caseId     String
+  case       VehicleCase @relation(fields: [caseId], references: [id])
+  kind       String   // 'DEREG_FORM' | 'INVOICE'
+  storageKey String   // 경로 또는 S3 key
+  createdAt  DateTime @default(now())
 }
+

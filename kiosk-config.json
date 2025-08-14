@@ -1,0 +1,23 @@
+{
+  "kiosk": {
+    "enabled": true,
+    "fullscreen": true,
+    "hideNavigation": true,
+    "disableRightClick": true,
+    "disableKeyboardShortcuts": true,
+    "autoReload": true,
+    "reloadInterval": 300000,
+    "inactivityTimeout": 60000,
+    "homepage": "http://localhost:3000"
+  },
+  "display": {
+    "orientation": "portrait",
+    "zoom": 100,
+    "resolution": "1080x1920"
+  },
+  "security": {
+    "disableDevTools": true,
+    "disableDownloads": true,
+    "disableExternalLinks": true
+  }
+}

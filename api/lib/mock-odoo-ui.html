@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mock Odoo - Vehicle Case Management</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f5f5f5;
+            color: #333;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 1rem 2rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+        
+        .stat-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+        
+        .stat-number {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #667eea;
+        }
+        
+        .stat-label {
+            color: #666;
+            margin-top: 0.5rem;
+        }
+        
+        .section {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            margin-bottom: 2rem;
+            overflow: hidden;
+        }
+        
+        .section-header {
+            background: #f8f9fa;
+            padding: 1rem 1.5rem;
+            border-bottom: 1px solid #e9ecef;
+            font-weight: 600;
+        }
+        
+        .section-content {
+            padding: 1.5rem;
+        }
+        
+        .case-card {
+            border: 1px solid #e9ecef;
+            border-radius: 6px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            background: #fafafa;
+        }
+        
+        .case-header {
+            display: flex;
+            justify-content: between;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+        
+        .case-title {
+            font-weight: 600;
+            color: #333;
+        }
+        
+        .status-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+        
+        .status-received {
+            background: #e3f2fd;
+            color: #1976d2;
+        }
+        
+        .status-completed {
+            background: #e8f5e8;
+            color: #2e7d32;
+        }
+        
+        .case-details {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 0.5rem;
+            margin-top: 1rem;
+            font-size: 0.9rem;
+        }
+        
+        .detail-item {
+            color: #666;
+        }
+        
+        .detail-label {
+            font-weight: 500;
+            color: #333;
+        }
+        
+        .document-list {
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid #e9ecef;
+        }
+        
+        .document-item {
+            display: flex;
+            justify-content: between;
+            align-items: center;
+            padding: 0.5rem;
+            background: white;
+            border: 1px solid #e9ecef;
+            border-radius: 4px;
+            margin-bottom: 0.5rem;
+        }
+        
+        .refresh-btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 500;
+            margin-bottom: 1rem;
+        }
+        
+        .refresh-btn:hover {
+            background: #5a6fd8;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 2rem;
+            color: #666;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 3rem;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Mock Odoo - Vehicle Case Management</h1>
+        <p>Kiosk Integration Dashboard</p>
+    </div>
+    
+    <div class="container">
+        <button class="refresh-btn" onclick="loadData()">새로고침</button>
+        
+        <div class="stats" id="stats">
+            <div class="stat-card">
+                <div class="stat-number" id="total-cases">-</div>
+                <div class="stat-label">총 케이스</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="total-documents">-</div>
+                <div class="stat-label">총 문서</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="received-cases">-</div>
+                <div class="stat-label">접수 중</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="completed-cases">-</div>
+                <div class="stat-label">완료</div>
+            </div>
+        </div>
+        
+        <div class="section">
+            <div class="section-header">케이스 목록</div>
+            <div class="section-content" id="cases-content">
+                <div class="loading">데이터를 불러오는 중...</div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        function formatDate(dateString) {
+            return new Date(dateString).toLocaleString('ko-KR');
+        }
+        
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+        
+        async function loadData() {
+            try {
+                const response = await fetch('/debug/data');
+                const data = await response.json();
+                
+                updateStats(data);
+                renderCases(data);
+            } catch (error) {
+                console.error('Failed to load data:', error);
+                document.getElementById('cases-content').innerHTML = 
+                    '<div class="empty-state">데이터를 불러올 수 없습니다.</div>';
+            }
+        }
+        
+        function updateStats(data) {
+            const totalCases = data.cases.length;
+            const totalDocuments = Object.values(data.documents).reduce((sum, docs) => sum + docs.length, 0);
+            const receivedCases = data.cases.filter(c => c.status === 'RECEIVED').length;
+            const completedCases = data.cases.filter(c => c.status === 'COMPLETED').length;
+            
+            document.getElementById('total-cases').textContent = totalCases;
+            document.getElementById('total-documents').textContent = totalDocuments;
+            document.getElementById('received-cases').textContent = receivedCases;
+            document.getElementById('completed-cases').textContent = completedCases;
+        }
+        
+        function renderCases(data) {
+            const container = document.getElementById('cases-content');
+            
+            if (data.cases.length === 0) {
+                container.innerHTML = '<div class="empty-state">등록된 케이스가 없습니다.</div>';
+                return;
+            }
+            
+            const casesHtml = data.cases.map(caseItem => {
+                const documents = data.documents[caseItem.external_uuid] || [];
+                const statusClass = caseItem.status === 'COMPLETED' ? 'status-completed' : 'status-received';
+                
+                return `
+                    <div class="case-card">
+                        <div class="case-header">
+                            <div class="case-title">${caseItem.plate_number || '번호판 없음'}</div>
+                            <span class="status-badge ${statusClass}">${caseItem.status}</span>
+                        </div>
+                        
+                        <div class="case-details">
+                            <div class="detail-item">
+                                <span class="detail-label">소유자:</span> ${caseItem.owner_name || '-'}
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">소유자 유형:</span> ${caseItem.owner_type || '-'}
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">제출일:</span> ${formatDate(caseItem.submitted_at)}
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">문서 개수:</span> ${documents.length}개
+                            </div>
+                        </div>
+                        
+                        ${documents.length > 0 ? `
+                            <div class="document-list">
+                                <strong>업로드된 문서:</strong>
+                                ${documents.map(doc => `
+                                    <div class="document-item">
+                                        <div>
+                                            <strong>${doc.doc_type}</strong><br>
+                                            <small>${doc.filename} (${formatFileSize(doc.file_size)})</small>
+                                        </div>
+                                        <div>
+                                            <small>OCR: ${doc.ocr_text?.confidence || 'N/A'}</small>
+                                        </div>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        ` : ''}
+                    </div>
+                `;
+            }).join('');
+            
+            container.innerHTML = casesHtml;
+        }
+        
+        // 페이지 로드시 데이터 불러오기
+        loadData();
+        
+        // 5초마다 자동 새로고침
+        setInterval(loadData, 5000);
+    </script>
+</body>
+</html>

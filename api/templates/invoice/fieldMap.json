@@ -1,0 +1,109 @@
+{
+  "font": "NotoSansCJKkr-Regular.ttf",
+  "page": 0,
+  "origin": "bottom-left",
+  "pageSize": { "width": 595, "height": 842 },
+  "fields": {
+    "invoice.shipper": {
+      "type": "text",
+      "x": 120,
+      "y": 750,
+      "w": 200,
+      "fontSize": 10,
+      "lineHeight": 12,
+      "maxLines": 3
+    },
+    "invoice.buyer": {
+      "type": "text",
+      "x": 120,
+      "y": 680,
+      "w": 200,
+      "fontSize": 10,
+      "lineHeight": 12,
+      "maxLines": 3
+    },
+    "invoice.notify": {
+      "type": "text",
+      "x": 350,
+      "y": 680,
+      "w": 200,
+      "fontSize": 10,
+      "lineHeight": 12,
+      "maxLines": 3
+    },
+    "invoice.pol": {
+      "type": "text",
+      "x": 120,
+      "y": 600,
+      "w": 150,
+      "fontSize": 10
+    },
+    "invoice.pod": {
+      "type": "text",
+      "x": 300,
+      "y": 600,
+      "w": 150,
+      "fontSize": 10
+    },
+    "invoice.destination": {
+      "type": "text",
+      "x": 120,
+      "y": 570,
+      "w": 200,
+      "fontSize": 10
+    },
+    "vehicle.plate": {
+      "type": "text",
+      "x": 120,
+      "y": 540,
+      "w": 150,
+      "fontSize": 10
+    },
+    "vehicle.model": {
+      "type": "text",
+      "x": 120,
+      "y": 510,
+      "w": 200,
+      "fontSize": 9
+    },
+    "invoice.qty": {
+      "type": "text",
+      "x": 350,
+      "y": 510,
+      "w": 50,
+      "fontSize": 10,
+      "format": "#,###"
+    },
+    "invoice.unitPrice": {
+      "type": "text",
+      "x": 420,
+      "y": 510,
+      "w": 80,
+      "fontSize": 10,
+      "format": "#,###"
+    },
+    "invoice.amount": {
+      "type": "text",
+      "x": 420,
+      "y": 480,
+      "w": 100,
+      "fontSize": 12,
+      "format": "#,###"
+    },
+    "invoice.weightKg": {
+      "type": "text",
+      "x": 350,
+      "y": 450,
+      "w": 80,
+      "fontSize": 10,
+      "format": "#,### kg"
+    },
+    "invoice.noAndDate": {
+      "type": "text",
+      "x": 120,
+      "y": 420,
+      "w": 200,
+      "fontSize": 10
+    }
+  }
+}

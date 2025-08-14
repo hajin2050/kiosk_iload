@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Tree View -->
+    <record id="view_vehicle_case_tree" model="ir.ui.view">
+        <field name="name">vehicle.case.tree</field>
+        <field name="model">vehicle.case</field>
+        <field name="arch" type="xml">
+            <tree string="Vehicle Cases">
+                <field name="plate_number"/>
+                <field name="owner_name"/>
+                <field name="owner_type"/>
+                <field name="company_name"/>
+                <field name="status"/>
+                <field name="submitted_at"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- Form View -->
+    <record id="view_vehicle_case_form" model="ir.ui.view">
+        <field name="name">vehicle.case.form</field>
+        <field name="model">vehicle.case</field>
+        <field name="arch" type="xml">
+            <form string="Vehicle Case">
+                <header>
+                    <button name="action_generate_pdf" string="PDF 생성" type="object" class="btn-primary"/>
+                    <button name="action_download_pdf" string="PDF 다운로드" type="object" class="btn-secondary"/>
+                    <field name="status" widget="statusbar"/>
+                </header>
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="plate_number"/>
+                            <field name="owner_name"/>
+                            <field name="owner_type"/>
+                            <field name="company_name"/>
+                        </group>
+                        <group>
+                            <field name="status" readonly="1"/>
+                            <field name="submitted_at"/>
+                            <field name="completed_at" readonly="1"/>
+                            <field name="ext_id" readonly="1"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Summary">
+                            <field name="summary_json" widget="json"/>
+                        </page>
+                    </notebook>
+                </sheet>
+                <div class="oe_chatter">
+                    <field name="message_follower_ids" widget="mail_followers"/>
+                    <field name="message_ids" widget="mail_thread"/>
+                </div>
+            </form>
+        </field>
+    </record>
+
+    <!-- Search View -->
+    <record id="view_vehicle_case_search" model="ir.ui.view">
+        <field name="name">vehicle.case.search</field>
+        <field name="model">vehicle.case</field>
+        <field name="arch" type="xml">
+            <search string="Search Vehicle Cases">
+                <field name="plate_number"/>
+                <field name="owner_name"/>
+                <field name="company_name"/>
+                <separator/>
+                <filter name="received" string="접수됨" domain="[('status', '=', 'RECEIVED')]"/>
+                <filter name="need_docs" string="추가서류필요" domain="[('status', '=', 'NEED_MORE_DOCS')]"/>
+                <filter name="completed" string="완료" domain="[('status', '=', 'COMPLETED')]"/>
+                <separator/>
+                <group expand="0" string="Group By">
+                    <filter name="by_status" string="상태" context="{'group_by': 'status'}"/>
+                    <filter name="by_owner_type" string="소유자 유형" context="{'group_by': 'owner_type'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- Action -->
+    <record id="action_vehicle_case" model="ir.actions.act_window">
+        <field name="name">차량 수출 케이스</field>
+        <field name="res_model">vehicle.case</field>
+        <field name="view_mode">tree,form</field>
+        <field name="search_view_id" ref="view_vehicle_case_search"/>
+    </record>
+
+    <!-- Menu -->
+    <menuitem id="menu_vehicle_root" 
+              name="차량 수출" 
+              sequence="50"/>
+    
+    <menuitem id="menu_vehicle_cases" 
+              name="케이스 관리" 
+              parent="menu_vehicle_root" 
+              action="action_vehicle_case"
+              sequence="10"/>
+</odoo>

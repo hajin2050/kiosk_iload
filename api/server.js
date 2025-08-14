@@ -1,11 +1,13 @@
+require('dotenv').config({ path: '../.env' })
 const express = require('express')
 const fs = require('fs')
 const path = require('path')
 const { PrismaClient } = require('@prisma/client')
-const odooSync = require('./lib/odoo-sync')
+const OdooClient = require('./lib/odooClient.js')
 
 const app = express()
 const prisma = new PrismaClient()
+const odooClient = new OdooClient()
 
 // CORS 설정
 app.use((req, res, next) => {
@@ -24,10 +26,29 @@ app.use(express.json())
 // 파일 업로드 라우터 (multer)
 app.use('/api/documents', require('./routes/document'))
 
-// ✅ POST /api/vehicle-case — 케이스 생성 (중복 방지)
+// OCR 라우터
+app.use('/api/ocr', require('./routes/ocr'))
+
+// Vehicle Registration OCR 라우터 (compiled from TypeScript)
+try {
+  app.use('/api/ocr', require('./dist/routes/vehicleRegistration').default)
+} catch (err) {
+  console.warn('Vehicle registration route not compiled yet:', err.message)
+}
+
+// Vehicle Cases 라우터
+app.use('/api/vehicle-cases', require('./routes/vehicleCases'))
+
+// PDF 라우터
+app.use('/api/pdf', require('./routes/pdf'))
+
+// Dashboard 라우터 (직원용 관리 인터페이스)
+app.use('/api/dashboard', require('./routes/dashboard'))
+
+// POST /api/vehicle-case — 케이스 생성 (중복 방지)
 app.post('/api/vehicle-case', async (req, res) => {
   try {
-    const { plateNumber, ownerName, ownerType, companyName, language } = req.body
+    const { plateNumber, ownerName, ownerType, companyName, isForeigner } = req.body
     
     // 중복 케이스 확인: 같은 차량번호+소유자명으로 최근 24시간 이내 케이스가 있는지 체크
     const recentCase = await prisma.vehicleCase.findFirst({
@@ -42,7 +63,7 @@ app.post('/api/vehicle-case', async (req, res) => {
     })
     
     if (recentCase) {
-      console.log(`🔄 Returning existing case ${recentCase.id} for ${plateNumber}/${ownerName}`)
+      console.log(`Returning existing case ${recentCase.id} for ${plateNumber}/${ownerName}`);
       return res.json({ ok: true, id: recentCase.id, qrToken: recentCase.qrToken, existing: true })
     }
     
@@ -52,23 +73,37 @@ app.post('/api/vehicle-case', async (req, res) => {
         ownerName,
         ownerType,
         companyName,
-        language,
+        isForeigner: Boolean(isForeigner),
         status: 'RECEIVED',
-        qrToken: 'token_' + Math.random().toString(36).substr(2, 9),
+        qrToken: 'token_' + Math.random().toString(36).substring(2, 11),
         submittedAt: new Date()
       },
       include: { documents: true }
     })
     
-    console.log(`✨ Created new case ${newCase.id} for ${plateNumber}/${ownerName}`)
+    console.log(`Created new case ${newCase.id} for ${plateNumber}/${ownerName}`);
 
     // Sync to Odoo after case creation (non-blocking)
-    odooSync.syncCase(newCase).then(result => {
-      if (result) {
-        console.log('✅ Case synced to Odoo successfully:', newCase.id)
+    odooClient.upsertVehicleCaseToOdoo({
+      ext_id: newCase.id,
+      plate_number: newCase.plateNumber,
+      owner_name: newCase.ownerName,
+      owner_type: newCase.ownerType,
+      company_name: newCase.companyName || '',
+      status: newCase.status,
+      submitted_at: newCase.submittedAt ? newCase.submittedAt.toISOString().replace('T', ' ').replace(/\.\d{3}Z$/, '') : false,
+      completed_at: newCase.completedAt ? newCase.completedAt.toISOString().replace('T', ' ').replace(/\.\d{3}Z$/, '') : false,
+      summary_json: {
+        ownerInfo: {
+          name: newCase.ownerName,
+          type: newCase.ownerType,
+          companyName: newCase.companyName || ''
+        }
       }
+    }).then(odooId => {
+      console.log('Case synced to Odoo successfully:', newCase.id, 'odooId:', odooId)
     }).catch(error => {
-      console.error('❌ Failed to sync new case to Odoo:', error.message)
+      console.error('Failed to sync new case to Odoo:', error.message)
     })
     
     res.json({ ok: true, id: newCase.id, qrToken: newCase.qrToken })
@@ -78,13 +113,14 @@ app.post('/api/vehicle-case', async (req, res) => {
   }
 })
 
-// ✅ GET /api/vehicle-case — 전체 케이스 조회
+// GET /api/vehicle-case — 전체 케이스 조회
 app.get('/api/vehicle-case', async (req, res) => {
   try {
     const cases = await prisma.vehicleCase.findMany({
       include: { documents: true },
       orderBy: { submittedAt: 'desc' }
     })
+    
     res.json({ ok: true, data: cases })
   } catch (e) {
     console.error(e)
@@ -92,7 +128,7 @@ app.get('/api/vehicle-case', async (req, res) => {
   }
 })
 
-// ✅ GET /api/vehicle-case/:id — 상세 조회
+// GET /api/vehicle-case/:id — 상세 조회
 app.get('/api/vehicle-case/:id', async (req, res) => {
   try {
     const row = await prisma.vehicleCase.findUnique({
@@ -100,6 +136,7 @@ app.get('/api/vehicle-case/:id', async (req, res) => {
       include: { documents: true }
     })
     if (!row) return res.status(404).json({ ok: false, message: 'Not found' })
+    
     res.json({ ok: true, data: row })
   } catch (e) {
     console.error(e)
@@ -107,65 +144,93 @@ app.get('/api/vehicle-case/:id', async (req, res) => {
   }
 })
 
-// ✅ GET /api/cases/:id/status — Step 3에서 케이스 상태 및 OCR 데이터 조회
-app.get('/api/cases/:id/status', async (req, res) => {
+// GET /api/cases/:caseId/summary — Step3용 종합 결과
+app.get('/api/cases/:caseId/summary', async (req, res) => {
   try {
+    const { caseId } = req.params;
+    
     const caseData = await prisma.vehicleCase.findUnique({
-      where: { id: req.params.id },
+      where: { id: caseId },
       include: { documents: true }
-    })
+    });
     
     if (!caseData) {
-      return res.status(404).json({ ok: false, message: 'Case not found' })
+      return res.status(404).json({ ok: false, message: 'Case not found' });
     }
 
-    // 차량등록증 문서에서 OCR 데이터 추출
-    const vehicleRegistrationDoc = caseData.documents.find(doc => doc.type === 'VEHICLE_REGISTRATION')
-    let vehicleData = {}
+    // 문서별 필드 데이터 수집
+    const perDocFields = {};
+    const allFields = {};
     
-    if (vehicleRegistrationDoc && vehicleRegistrationDoc.mappedFields) {
-      try {
-        const mappedFields = typeof vehicleRegistrationDoc.mappedFields === 'string' 
-          ? JSON.parse(vehicleRegistrationDoc.mappedFields) 
-          : vehicleRegistrationDoc.mappedFields
+    for (const doc of caseData.documents) {
+      if (doc.mappedFields) {
+        const fields = typeof doc.mappedFields === 'string' 
+          ? JSON.parse(doc.mappedFields) 
+          : doc.mappedFields;
         
-        vehicleData = {
-          license_plate: mappedFields.license_plate || '',
-          vehicle_model: mappedFields.vehicle_model || '',
-          manufacturing_date: mappedFields.manufacturing_date || '',
-          chassis_number: mappedFields.chassis_number || '',
-          registered_address: mappedFields.registered_address || '',
-          owner_name: mappedFields.owner_name || '',
-          birth_date: mappedFields.birth_date || '',
-          mileage: mappedFields.mileage || 0,
-          gross_weight: mappedFields.gross_weight || 0,
-          engine_displacement: mappedFields.engine_displacement || 0,
-          fuel_type: mappedFields.fuel_type || ''
-        }
-      } catch (parseError) {
-        console.warn('Failed to parse mappedFields:', parseError)
+        perDocFields[doc.type] = {
+          ...fields,
+          confidence: doc.ocrConfidence || 'medium',
+          source_document: doc.type
+        };
+        
+        // 통합 필드에 추가 (등록증 우선, 높은 confidence 우선)
+        Object.keys(fields).forEach(key => {
+          if (!allFields[key] || 
+              doc.type === 'VEHICLE_REGISTRATION' || 
+              (doc.ocrConfidence === 'high' && allFields[key].confidence !== 'high')) {
+            allFields[key] = {
+              value: fields[key],
+              source: doc.type,
+              confidence: doc.ocrConfidence || 'medium'
+            };
+          }
+        });
       }
     }
 
+    // 통합된 필드 값만 추출
+    const mergedFields = {};
+    Object.keys(allFields).forEach(key => {
+      mergedFields[key] = allFields[key].value;
+    });
+
     res.json({
       ok: true,
-      case_id: caseData.id,
-      status: caseData.status,
-      vehicle_data: vehicleData,
-      documents: caseData.documents.map(doc => ({
-        id: doc.id,
-        type: doc.type,
-        ocr_processed: !!doc.ocrResult
-      }))
-    })
+      data: {
+        documents: caseData.documents.map(doc => ({
+          id: doc.id,
+          type: doc.type,
+          filePath: doc.filePath,
+          ocrResult: doc.ocrResult,
+          mappedFields: doc.mappedFields,
+          ocrConfidence: doc.ocrConfidence,
+          createdAt: doc.createdAt,
+          processed: !!doc.ocrResult
+        })),
+        mergedFields,
+        perDocFields,
+        caseInfo: {
+          id: caseData.id,
+          plateNumber: caseData.plateNumber,
+          ownerName: caseData.ownerName,
+          status: caseData.status,
+          submittedAt: caseData.submittedAt
+        }
+      }
+    });
     
   } catch (e) {
-    console.error('Error fetching case status:', e)
-    res.status(500).json({ ok: false, message: 'Internal server error' })
+    console.error(`[API] Error fetching case summary ${req.params.caseId}:`, e);
+    res.status(500).json({ 
+      ok: false, 
+      message: 'Internal server error',
+      code: 'CASE_SUMMARY_ERROR' 
+    });
   }
 })
 
-// ✅ PATCH /api/vehicle-case/:id/status — 상태 변경
+// PATCH /api/vehicle-case/:id/status — 상태 변경
 app.patch('/api/vehicle-case/:id/status', async (req, res) => {
   try {
     const { status } = req.body
@@ -184,7 +249,23 @@ app.patch('/api/vehicle-case/:id/status', async (req, res) => {
     })
 
     // Sync to Odoo after status change (non-blocking)
-    odooSync.syncCase(row).catch(error => {
+    odooClient.upsertVehicleCaseToOdoo({
+      ext_id: row.id,
+      plate_number: row.plateNumber,
+      owner_name: row.ownerName,
+      owner_type: row.ownerType,
+      company_name: row.companyName || '',
+      status: row.status,
+      submitted_at: row.submittedAt ? row.submittedAt.toISOString().replace('T', ' ').replace(/\.\d{3}Z$/, '') : false,
+      completed_at: row.completedAt ? row.completedAt.toISOString().replace('T', ' ').replace(/\.\d{3}Z$/, '') : false,
+      summary_json: {
+        ownerInfo: {
+          name: row.ownerName,
+          type: row.ownerType,
+          companyName: row.companyName || ''
+        }
+      }
+    }).catch(error => {
       console.error('Failed to sync case to Odoo:', error.message)
     })
 
@@ -195,7 +276,7 @@ app.patch('/api/vehicle-case/:id/status', async (req, res) => {
   }
 })
 
-// ✅ 실제 OCR + LLM 검증: 문서ID로 OCR 처리
+// 실제 OCR + LLM 검증: 문서ID로 OCR 처리
 app.post('/api/documents/:id/ocr', async (req, res) => {
   const { performOCR, mapFieldsByDocumentType } = require('./lib/ocr')
   const { validateAndEnhanceOCRResult } = require('./lib/llm-validator')
@@ -266,7 +347,7 @@ app.post('/api/documents/:id/ocr', async (req, res) => {
   }
 })
 
-// ✅ Odoo에서 키오스크로 역동기화를 위한 엔드포인트
+// Odoo에서 키오스크로 역동기화를 위한 엔드포인트
 app.patch('/api/vehicle-case/:id', async (req, res) => {
   try {
     const { validatedFields, status, ocrValidated, ocrIssues } = req.body
@@ -316,7 +397,7 @@ app.patch('/api/vehicle-case/:id', async (req, res) => {
   }
 })
 
-// ✅ PDF 생성 및 다운로드 상태 확인
+// PDF 생성 및 다운로드 상태 확인
 app.get('/api/vehicle-case/:id/pdf-status', async (req, res) => {
   try {
     const caseData = await prisma.vehicleCase.findUnique({
@@ -353,7 +434,7 @@ app.get('/api/vehicle-case/:id/pdf-status', async (req, res) => {
   }
 })
 
-// ✅ PDF 생성 및 다운로드
+// PDF 생성 및 다운로드
 app.post('/api/vehicle-case/:id/pdf', async (req, res) => {
   try {
     const caseData = await prisma.vehicleCase.findUnique({
@@ -365,13 +446,30 @@ app.post('/api/vehicle-case/:id/pdf', async (req, res) => {
       return res.status(404).json({ ok: false, message: 'Case not found' })
     }
 
-    // Odoo에서 PDF 생성
+    // Odoo에서 PDF 생성 및 첨부파일 업로드
     try {
-      const pdfBuffer = await odooSync.generatePDF(caseData.id)
+      const result = await odooSync.generatePDF(caseData.id)
+      const ODOO_BASE = process.env.ODOO_URL || 'http://localhost:8069';
       
+      // PDF가 첨부파일로 업로드된 경우 다운로드 링크 반환
+      if (result.attachmentIds && result.attachmentIds.length > 0) {
+        const downloads = result.attachmentIds.map(attId => ({
+          kind: "PDF_DOCUMENT",
+          fileId: attId,
+          odooDownloadUrl: `${ODOO_BASE}/kiosk/attachment/${attId}/download`
+        }));
+        
+        return res.json({
+          ok: true,
+          message: 'PDF generated and attached',
+          downloads
+        });
+      }
+      
+      // 기존 방식: PDF 바이트 직접 반환
       res.setHeader('Content-Type', 'application/pdf')
       res.setHeader('Content-Disposition', `attachment; filename="vehicle-deregistration-${caseData.id}.pdf"`)
-      res.send(pdfBuffer)
+      res.send(result)
       
     } catch (error) {
       console.error('Failed to generate PDF:', error)
@@ -384,7 +482,7 @@ app.post('/api/vehicle-case/:id/pdf', async (req, res) => {
   }
 })
 
-// ✅ PDF 미리보기
+// PDF 미리보기
 app.get('/api/vehicle-case/:id/pdf', async (req, res) => {
   try {
     const caseData = await prisma.vehicleCase.findUnique({
@@ -419,7 +517,7 @@ app.get('/api/vehicle-case/:id/pdf', async (req, res) => {
   }
 })
 
-// ✅ Health Check
+// Health Check
 app.get('/api/health', (_, res) => res.send('ok'))
 
 const PORT = process.env.PORT || 3002

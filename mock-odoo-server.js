@@ -25,7 +25,7 @@ const documents = new Map();
 
 // 더미 데이터 생성 비활성화
 // function initSampleData() { /* 더미 데이터 생성 안함 */ }
-console.log('📋 Mock ODOO server started without dummy data');
+console.log(' Mock ODOO server started without dummy data');
 
 // 인증 미들웨어
 function authenticate(req, res, next) {
@@ -46,7 +46,7 @@ function authenticate(req, res, next) {
 app.post('/kiosk/api/case/upsert', authenticate, (req, res) => {
   try {
     const caseData = req.body;
-    console.log('📝 Mock Odoo: Case upsert', caseData.external_uuid);
+    console.log(' Mock Odoo: Case upsert', caseData.external_uuid);
     
     // 케이스 저장
     cases.set(caseData.external_uuid, {
@@ -64,12 +64,12 @@ app.post('/kiosk/api/case/upsert', authenticate, (req, res) => {
     });
     
   } catch (error) {
-    console.error('❌ Mock Odoo case upsert error:', error);
+    console.error(' Mock Odoo case upsert error:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
 
-// 📄 문서 업로드
+//  문서 업로드
 app.post('/kiosk/api/document/upload', authenticate, (req, res) => {
   try {
     const { external_uuid, doc_type, filename, mimetype, file_base64, ocr_text, mapped_fields } = req.body;
@@ -105,7 +105,7 @@ app.post('/kiosk/api/document/upload', authenticate, (req, res) => {
           ocr_processed: true,
           last_updated: new Date().toISOString()
         };
-        console.log('✅ Updated vehicle_data:', caseData.vehicle_data);
+        console.log(' Updated vehicle_data:', caseData.vehicle_data);
       }
       
       cases.set(external_uuid, caseData);
@@ -118,16 +118,16 @@ app.post('/kiosk/api/document/upload', authenticate, (req, res) => {
     });
     
   } catch (error) {
-    console.error('❌ Mock Odoo document upload error:', error);
+    console.error(' Mock Odoo document upload error:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
 
-// 📊 케이스 상태 확인
+//  케이스 상태 확인
 app.get('/kiosk/api/case/:case_id/status', authenticate, (req, res) => {
   try {
     const caseId = req.params.case_id;
-    console.log('🔍 Mock Odoo: Status check for', caseId);
+    console.log(' Mock Odoo: Status check for', caseId);
     
     if (!cases.has(caseId)) {
       return res.status(404).json({ error: 'Case not found' });
@@ -147,7 +147,7 @@ app.get('/kiosk/api/case/:case_id/status', authenticate, (req, res) => {
     });
     
   } catch (error) {
-    console.error('❌ Mock Odoo status check error:', error);
+    console.error(' Mock Odoo status check error:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
@@ -169,7 +169,7 @@ app.post('/kiosk/api/case/:case_id/pdf', authenticate, async (req, res) => {
     const templatePath = path.join(process.cwd(), '[별지 제17호서식] 자동차 말소등록 신청서(자동차등록규칙).pdf');
     
     if (!fs.existsSync(templatePath)) {
-      console.error('❌ Template file not found:', templatePath);
+      console.error(' Template file not found:', templatePath);
       return res.status(500).json({ error: 'Template file not found' });
     }
     
@@ -203,7 +203,7 @@ app.post('/kiosk/api/case/:case_id/pdf', authenticate, async (req, res) => {
     const font = await pdfDoc.embedFont('Helvetica');
     
     try {
-      // 🎯 LLM이 분석한 최적 좌표로 필드 배치
+      //  LLM이 분석한 최적 좌표로 필드 배치
       console.log('📍 LLM 분석 좌표 적용 중...');
       
       // 소유자 성명
@@ -215,7 +215,7 @@ app.post('/kiosk/api/case/:case_id/pdf', authenticate, async (req, res) => {
           size: optimalCoordinates.owner_name.size,
           font: font,
         });
-        console.log(`✅ 소유자명 배치: (${optimalCoordinates.owner_name.x}, ${optimalCoordinates.owner_name.y})`);
+        console.log(` 소유자명 배치: (${optimalCoordinates.owner_name.x}, ${optimalCoordinates.owner_name.y})`);
       }
       
       // 주민등록번호
@@ -227,7 +227,7 @@ app.post('/kiosk/api/case/:case_id/pdf', authenticate, async (req, res) => {
           size: optimalCoordinates.birth_date.size,
           font: font,
         });
-        console.log(`✅ 주민번호 배치: (${optimalCoordinates.birth_date.x}, ${optimalCoordinates.birth_date.y})`);
+        console.log(` 주민번호 배치: (${optimalCoordinates.birth_date.x}, ${optimalCoordinates.birth_date.y})`);
       }
       
       // 주소
@@ -239,7 +239,7 @@ app.post('/kiosk/api/case/:case_id/pdf', authenticate, async (req, res) => {
           size: optimalCoordinates.address_line1.size,
           font: font,
         });
-        console.log(`✅ 주소 배치: (${optimalCoordinates.address_line1.x}, ${optimalCoordinates.address_line1.y})`);
+        console.log(` 주소 배치: (${optimalCoordinates.address_line1.x}, ${optimalCoordinates.address_line1.y})`);
       }
       
       // 전화번호 (가정: 차량데이터에 phone이 있다면)
@@ -250,7 +250,7 @@ app.post('/kiosk/api/case/:case_id/pdf', authenticate, async (req, res) => {
           size: optimalCoordinates.phone.size,
           font: font,
         });
-        console.log(`✅ 전화번호 배치: (${optimalCoordinates.phone.x}, ${optimalCoordinates.phone.y})`);
+        console.log(` 전화번호 배치: (${optimalCoordinates.phone.x}, ${optimalCoordinates.phone.y})`);
       }
       
       // 자동차등록번호
@@ -262,7 +262,7 @@ app.post('/kiosk/api/case/:case_id/pdf', authenticate, async (req, res) => {
           size: optimalCoordinates.license_plate.size,
           font: font,
         });
-        console.log(`✅ 차량번호 배치: (${optimalCoordinates.license_plate.x}, ${optimalCoordinates.license_plate.y})`);
+        console.log(` 차량번호 배치: (${optimalCoordinates.license_plate.x}, ${optimalCoordinates.license_plate.y})`);
       }
       
       // 차대번호
@@ -273,7 +273,7 @@ app.post('/kiosk/api/case/:case_id/pdf', authenticate, async (req, res) => {
           size: optimalCoordinates.chassis_number.size,
           font: font,
         });
-        console.log(`✅ 차대번호 배치: (${optimalCoordinates.chassis_number.x}, ${optimalCoordinates.chassis_number.y})`);
+        console.log(` 차대번호 배치: (${optimalCoordinates.chassis_number.x}, ${optimalCoordinates.chassis_number.y})`);
       }
       
       // 주행거리
@@ -284,7 +284,7 @@ app.post('/kiosk/api/case/:case_id/pdf', authenticate, async (req, res) => {
           size: optimalCoordinates.mileage.size,
           font: font,
         });
-        console.log(`✅ 주행거리 배치: (${optimalCoordinates.mileage.x}, ${optimalCoordinates.mileage.y})`);
+        console.log(` 주행거리 배치: (${optimalCoordinates.mileage.x}, ${optimalCoordinates.mileage.y})`);
       }
       
       // 폐차 체크박스
@@ -295,7 +295,7 @@ app.post('/kiosk/api/case/:case_id/pdf', authenticate, async (req, res) => {
           size: optimalCoordinates.scrap_checkbox.size,
           font: font,
         });
-        console.log(`✅ 폐차 체크 배치: (${optimalCoordinates.scrap_checkbox.x}, ${optimalCoordinates.scrap_checkbox.y})`);
+        console.log(` 폐차 체크 배치: (${optimalCoordinates.scrap_checkbox.x}, ${optimalCoordinates.scrap_checkbox.y})`);
       }
       
       // 발급필요 체크박스
@@ -306,7 +306,7 @@ app.post('/kiosk/api/case/:case_id/pdf', authenticate, async (req, res) => {
           size: optimalCoordinates.certificate_checkbox.size,
           font: font,
         });
-        console.log(`✅ 발급필요 체크 배치: (${optimalCoordinates.certificate_checkbox.x}, ${optimalCoordinates.certificate_checkbox.y})`);
+        console.log(` 발급필요 체크 배치: (${optimalCoordinates.certificate_checkbox.x}, ${optimalCoordinates.certificate_checkbox.y})`);
       }
       
       // 신청일 (년월일) - LLM 좌표 사용
@@ -322,7 +322,7 @@ app.post('/kiosk/api/case/:case_id/pdf', authenticate, async (req, res) => {
           size: optimalCoordinates.application_year.size,
           font: font,
         });
-        console.log(`✅ 신청년도 배치: (${optimalCoordinates.application_year.x}, ${optimalCoordinates.application_year.y})`);
+        console.log(` 신청년도 배치: (${optimalCoordinates.application_year.x}, ${optimalCoordinates.application_year.y})`);
       }
       
       if (optimalCoordinates.application_month) {
@@ -332,7 +332,7 @@ app.post('/kiosk/api/case/:case_id/pdf', authenticate, async (req, res) => {
           size: optimalCoordinates.application_month.size,
           font: font,
         });
-        console.log(`✅ 신청월 배치: (${optimalCoordinates.application_month.x}, ${optimalCoordinates.application_month.y})`);
+        console.log(` 신청월 배치: (${optimalCoordinates.application_month.x}, ${optimalCoordinates.application_month.y})`);
       }
       
       if (optimalCoordinates.application_day) {
@@ -342,7 +342,7 @@ app.post('/kiosk/api/case/:case_id/pdf', authenticate, async (req, res) => {
           size: optimalCoordinates.application_day.size,
           font: font,
         });
-        console.log(`✅ 신청일 배치: (${optimalCoordinates.application_day.x}, ${optimalCoordinates.application_day.y})`);
+        console.log(` 신청일 배치: (${optimalCoordinates.application_day.x}, ${optimalCoordinates.application_day.y})`);
       }
       
       // 신청인 성명
@@ -354,7 +354,7 @@ app.post('/kiosk/api/case/:case_id/pdf', authenticate, async (req, res) => {
           size: optimalCoordinates.applicant_name.size,
           font: font,
         });
-        console.log(`✅ 신청인명 배치: (${optimalCoordinates.applicant_name.x}, ${optimalCoordinates.applicant_name.y})`);
+        console.log(` 신청인명 배치: (${optimalCoordinates.applicant_name.x}, ${optimalCoordinates.applicant_name.y})`);
       }
       
       // 신청인 생년월일
@@ -365,7 +365,7 @@ app.post('/kiosk/api/case/:case_id/pdf', authenticate, async (req, res) => {
           size: optimalCoordinates.applicant_birth.size,
           font: font,
         });
-        console.log(`✅ 신청인 생년월일 배치: (${optimalCoordinates.applicant_birth.x}, ${optimalCoordinates.applicant_birth.y})`);
+        console.log(` 신청인 생년월일 배치: (${optimalCoordinates.applicant_birth.x}, ${optimalCoordinates.applicant_birth.y})`);
       }
       
       // 행정정보 공동이용 동의 체크
@@ -376,10 +376,10 @@ app.post('/kiosk/api/case/:case_id/pdf', authenticate, async (req, res) => {
         font: font,
       });
       
-      console.log('✅ Form fields filled successfully');
+      console.log(' Form fields filled successfully');
       
     } catch (textError) {
-      console.warn('⚠️ Some text could not be added:', textError.message);
+      console.warn(' Some text could not be added:', textError.message);
       // 텍스트 추가에 실패해도 PDF는 생성
     }
     
@@ -391,10 +391,10 @@ app.post('/kiosk/api/case/:case_id/pdf', authenticate, async (req, res) => {
     res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
     res.send(Buffer.from(pdfBytes));
     
-    console.log('✅ PDF generated successfully for case:', caseId);
+    console.log(' PDF generated successfully for case:', caseId);
     
   } catch (error) {
-    console.error('❌ Mock Odoo PDF generation error:', error);
+    console.error(' Mock Odoo PDF generation error:', error);
     res.status(500).json({ error: 'PDF generation failed', details: error.message });
   }
 });
@@ -468,7 +468,7 @@ app.get('/', (req, res) => {
     <body>
         <div class="container">
             <div class="header">
-                <h1>🏢 Odoo 키오스크 관리 시스템</h1>
+                <h1> Odoo 키오스크 관리 시스템</h1>
                 <p>차량 말소등록 신청 관리 대시보드</p>
             </div>
             
@@ -493,7 +493,7 @@ app.get('/', (req, res) => {
             
             <div class="section">
                 <div class="section-header">
-                    <h2>📋 케이스 관리</h2>
+                    <h2> 케이스 관리</h2>
                     <button class="btn btn-primary refresh-btn" onclick="loadData()">새로고침</button>
                 </div>
                 <div class="case-list" id="case-list">
@@ -531,7 +531,7 @@ app.get('/', (req, res) => {
                                 \${case_.company_name ? \`<div>회사명: \${case_.company_name}</div>\` : ''}
                                 
                                 <div class="case-details-expanded" id="details-\${index}" style="display: none;">
-                                    <h4 style="margin-bottom: 10px; color: #714B67;">📄 차량 정보 (OCR)</h4>
+                                    <h4 style="margin-bottom: 10px; color: #714B67;"> 차량 정보 (OCR)</h4>
                                     \${case_.vehicle_data ? renderVehicleInfo(case_.vehicle_data) : '<div style="color: #666;">차량 정보 없음</div>'}
                                     
                                     <h4 style="margin: 15px 0 10px 0; color: #714B67;">📎 업로드된 서류</h4>
@@ -546,19 +546,19 @@ app.get('/', (req, res) => {
                                     
                                     \${case_.vehicle_data && case_.status === 'RECEIVED' ? \`
                                       <div class="verification-section">
-                                        <h4 style="margin-bottom: 15px; color: #714B67;">✅ OCR 데이터 검증 및 수정</h4>
+                                        <h4 style="margin-bottom: 15px; color: #714B67;"> OCR 데이터 검증 및 수정</h4>
                                         <div id="verification-form-\${index}">
                                           \${renderEditableVehicleForm(case_.vehicle_data, index)}
                                         </div>
                                         <div class="verification-actions">
                                           <button class="btn btn-verify" onclick="validateOCRData('\${case_.id}', \${index}); event.stopPropagation();">
-                                            🔍 데이터 검증
+                                             데이터 검증
                                           </button>
                                           <button class="btn btn-approve" onclick="approveCase('\${case_.id}', \${index}); event.stopPropagation();">
-                                            ✅ 승인 및 PDF 생성
+                                             승인 및 PDF 생성
                                           </button>
                                           <button class="btn btn-reject" onclick="rejectCase('\${case_.id}', \${index}); event.stopPropagation();">
-                                            ❌ 반려
+                                             반려
                                           </button>
                                         </div>
                                       </div>
@@ -570,10 +570,10 @@ app.get('/', (req, res) => {
                                 <div>
                                     <button class="btn btn-success" onclick="generatePDF('\${case_.id}'); event.stopPropagation();" 
                                             \${case_.status !== 'COMPLETED' ? 'disabled' : ''}>
-                                        📄 PDF
+                                         PDF
                                     </button>
                                     \${case_.status === 'RECEIVED' ? 
-                                      \`<button class="btn btn-warning" onclick="updateStatus('\${case_.id}', 'COMPLETED'); event.stopPropagation();">✅ 완료</button>\` : 
+                                      \`<button class="btn btn-warning" onclick="updateStatus('\${case_.id}', 'COMPLETED'); event.stopPropagation();"> 완료</button>\` : 
                                       ''
                                     }
                                 </div>
@@ -607,15 +607,15 @@ app.get('/', (req, res) => {
             
             function getDocumentIcon(docType) {
                 const iconMap = {
-                    'VEHICLE_REGISTRATION': '📄',
+                    'VEHICLE_REGISTRATION': '',
                     'ID_CARD': '🆔',
                     'FOREIGN_ID_FRONT': '🆔',
                     'FOREIGN_ID_BACK': '🆔',
-                    'BUSINESS_LICENSE': '📋',
+                    'BUSINESS_LICENSE': '',
                     'VEHICLE_MGMT_LICENSE': '📑',
                     'CORPORATE_REGISTRY': '📜',
-                    'SEAL_CERTIFICATE': '🏛️',
-                    'DELEGATION_FORM': '📝',
+                    'SEAL_CERTIFICATE': '🏛',
+                    'DELEGATION_FORM': '',
                     'INVOICE': '🧾'
                 };
                 return iconMap[docType] || '📁';
@@ -923,13 +923,13 @@ app.get('/', (req, res) => {
   `);
 });
 
-// ✅ 케이스 승인 (직원용)
+//  케이스 승인 (직원용)
 app.post('/kiosk/api/case/:case_id/approve', authenticate, (req, res) => {
   try {
     const caseId = req.params.case_id;
     const { vehicle_data, approved_at } = req.body;
     
-    console.log('📋 Mock Odoo: Case approval', caseId);
+    console.log(' Mock Odoo: Case approval', caseId);
     
     if (cases.has(caseId)) {
       const caseData = cases.get(caseId);
@@ -948,7 +948,7 @@ app.post('/kiosk/api/case/:case_id/approve', authenticate, (req, res) => {
       res.status(404).json({ error: 'Case not found' });
     }
   } catch (error) {
-    console.error('❌ Mock Odoo case approval error:', error);
+    console.error(' Mock Odoo case approval error:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
@@ -976,18 +976,18 @@ app.patch('/kiosk/api/case/:case_id/vehicle-data', authenticate, (req, res) => {
       res.status(404).json({ error: 'Case not found' });
     }
   } catch (error) {
-    console.error('❌ Mock Odoo vehicle data update error:', error);
+    console.error(' Mock Odoo vehicle data update error:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
 
-// ❌ 케이스 반려 (직원용)
+//  케이스 반려 (직원용)
 app.post('/kiosk/api/case/:case_id/reject', authenticate, (req, res) => {
   try {
     const caseId = req.params.case_id;
     const { reason, rejected_at } = req.body;
     
-    console.log('❌ Mock Odoo: Case rejection', caseId);
+    console.log(' Mock Odoo: Case rejection', caseId);
     
     if (cases.has(caseId)) {
       const caseData = cases.get(caseId);
@@ -1006,7 +1006,7 @@ app.post('/kiosk/api/case/:case_id/reject', authenticate, (req, res) => {
       res.status(404).json({ error: 'Case not found' });
     }
   } catch (error) {
-    console.error('❌ Mock Odoo case rejection error:', error);
+    console.error(' Mock Odoo case rejection error:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
@@ -1047,12 +1047,12 @@ app.patch('/kiosk/api/case/:case_id/status', (req, res) => {
     });
     
   } catch (error) {
-    console.error('❌ Mock Odoo status update error:', error);
+    console.error(' Mock Odoo status update error:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
 
-// 📊 관리 정보 (디버깅용)
+//  관리 정보 (디버깅용)
 app.get('/kiosk/api/admin/status', (req, res) => {
   const casesArray = Array.from(cases.entries()).map(([id, data]) => ({ id, ...data }));
   const documentsArray = Array.from(documents.entries()).map(([id, data]) => ({ id, ...data }));
@@ -1071,11 +1071,11 @@ app.get('/kiosk/api/admin/status', (req, res) => {
 const PORT = process.env.MOCK_ODOO_PORT || 8069;
 
 app.listen(PORT, () => {
-  console.log(`\n🎭 Mock Odoo Server started on port ${PORT}`);
+  console.log(`\n Mock Odoo Server started on port ${PORT}`);
   console.log(`📡 Health check: http://localhost:${PORT}/kiosk/api/health`);
-  console.log(`📊 Admin panel: http://localhost:${PORT}/kiosk/api/admin/status`);
+  console.log(` Admin panel: http://localhost:${PORT}/kiosk/api/admin/status`);
   console.log(`🔑 Using secret: your_secure_shared_secret_here`);
-  console.log(`\n✅ Ready to receive kiosk requests!\n`);
+  console.log(`\n Ready to receive kiosk requests!\n`);
 });
 
 // 종료 처리
