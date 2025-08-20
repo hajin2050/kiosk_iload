@@ -50,7 +50,8 @@
       "Bash(source:*)",
       "Bash(pip install:*)",
       "Bash(mv:*)",
-      "Bash(/usr/local/bin/python3.11 odoo-bin:*)"
+      "Bash(/usr/local/bin/python3.11 odoo-bin:*)",
+      "Bash(npm run build:*)"
     ],
     "deny": [],
     "defaultMode": "acceptEdits",
